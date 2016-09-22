@@ -17,14 +17,18 @@ public class Game {
 		// Read the following M lines of the Map
 		for (int i = 0; i < M; i++) {
 			line = br.readLine();
-			
+			System.out.println(line);
 			// to do
 			// Read the map line by line
 		}
 		
+		System.out.println("--- Finish reading map ---");
 		// to do
 		// Find the number of stations and pokemons in the map 
 		// Continue read the information of all the stations and pokemons by using br.readLine();
+		while((line = br.readLine()) != null) {
+			System.out.println(line);
+		}
 		
 		br.close();
 	}
