@@ -1,8 +1,16 @@
 
-public class Station {
+public class Station extends Cell{
+	private int numPokeBalls;
+	private static final boolean DEFAULT_CANPASS = true;
 
-	public Station() {
-		// TODO Auto-generated constructor stub
+	public Station(int row, int col, int numPokeBalls) {
+		super(row, col, DEFAULT_CANPASS);
+		this.numPokeBalls = numPokeBalls;
 	}
 
+	public int getNumPokeBalls() {
+		return numPokeBalls;
+	}
+
+	
 }
