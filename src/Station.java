@@ -12,5 +12,11 @@ public class Station extends Cell{
 		return numPokeBalls;
 	}
 
+	@Override
+	public String toString() {
+		return "Station [numPokeBalls=" + numPokeBalls + "]";
+	}
+
+	
 	
 }

@@ -2,8 +2,8 @@ import java.util.Arrays;
 
 public class Map {
 	private MapType[][] cells;
-	private int M;
-	private int N;
+	private final int M;
+	private final int N;
 	public enum MapType {
 		WALL, EMPTY, START, DEST, SUPPLY, POKEMON
 	}

@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.BufferedReader;
 
 public class Game {
@@ -25,7 +27,7 @@ public class Game {
 			// to do
 			// Read the map line by line
 			line = br.readLine();
-			System.out.println(line);
+//			System.out.println(line);
 			for(int j = 0; j < N; j++) {
 				char cellType = line.charAt(j);
 				switch(cellType) {
@@ -61,16 +63,48 @@ public class Game {
 			}
 		}
 		
-//		map.printMap();	
-
+		map.printMap();	
 		
-		System.out.println("--- Finish reading map ---");
 		// to do
 		// Find the number of stations and pokemons in the map 
 		// Continue read the information of all the stations and pokemons by using br.readLine();
 		while((line = br.readLine()) != null) {
-			System.out.println(line);
+//			System.out.println(line);
+			
+			// setting up REGEX for data parsing
+			String pkmREGEX = "<(\\d+),(\\d+)>,\\s?(\\w+)\\s?,\\s?(\\w+)\\s?,\\s?(\\d+)\\s?,\\s?(\\d+)\\s?";
+			String pksREGEX = "<(\\d+),(\\d+)>,\\s?(\\d+)\\s?";
+			Pattern pkmPattern = Pattern.compile(pkmREGEX);
+			Pattern pksPattern = Pattern.compile(pksREGEX);
+			Matcher pkmMatch = pkmPattern.matcher(line);
+			Matcher pksMatch = pksPattern.matcher(line);
+			
+			// parse pokemon
+			if(pkmMatch.find()) {
+				int row = Integer.parseInt(pkmMatch.group(1));
+				int col = Integer.parseInt(pkmMatch.group(2));
+				String name = pkmMatch.group(3);
+				String species = pkmMatch.group(4);
+				int cp = Integer.parseInt(pkmMatch.group(5));
+				int reqBalls = Integer.parseInt(pkmMatch.group(6));				
+				// insert new pokemon
+				pokemons.add(new Pokemon(row, col, name, species, cp, reqBalls));		
+			}
+			// parse pokeshop
+			else if(pksMatch.find()) {
+				int row = Integer.parseInt(pksMatch.group(1));
+				int col = Integer.parseInt(pksMatch.group(2));
+				int pvdBalls = Integer.parseInt(pksMatch.group(3));
+				// insert new pokeshop
+				stations.add(new Station(row, col, pvdBalls));
+			}
+			else {
+				throw new Exception("Cannot parse map data");
+			}
 		}
+		
+		System.out.println(pokemons);
+		System.out.println(stations);
 		
 		br.close();
 	}

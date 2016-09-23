@@ -21,5 +21,11 @@ public class Cell {
 	public boolean isCanPass() {
 		return canPass;
 	}
+
+	@Override
+	public String toString() {
+		return "Cell [row=" + row + ", col=" + col + ", canPass=" + canPass + "]";
+	}
+	
 	
 }

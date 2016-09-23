@@ -13,6 +13,12 @@ public class Pokemon extends Cell{
 		this.cp = cp;
 		this.numRequiredBalls = numRequiredBalls;
 	}
+
+	@Override
+	public String toString() {
+		return "Pokemon [name=" + name + ", species=" + species + ", cp=" + cp + ", numRequiredBalls="
+				+ numRequiredBalls + "]";
+	}
 	
 	
 	
