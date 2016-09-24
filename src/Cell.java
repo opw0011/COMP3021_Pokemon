@@ -2,12 +2,10 @@
 public class Cell {
 	private int row;
 	private int col;
-	private boolean canPass;
 	
-	public Cell(int row, int col, boolean canPass) {
+	public Cell(int row, int col) {
 		this.row = row;
 		this.col = col;
-		this.canPass = canPass;
 	}
 
 	public int getRow() {
@@ -18,13 +16,9 @@ public class Cell {
 		return col;
 	}
 
-	public boolean isCanPass() {
-		return canPass;
-	}
-
 	@Override
 	public String toString() {
-		return "Cell [row=" + row + ", col=" + col + ", canPass=" + canPass + "]";
+		return "Cell [row=" + row + ", col=" + col + "]";
 	}
 	
 	
