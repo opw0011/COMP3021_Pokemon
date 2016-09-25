@@ -28,6 +28,19 @@ public class Map {
 			System.out.println();
 		}
 	}
+
+	public MapType getCell(int row, int col) {
+		return cells[row][col];
+	}
+
+	public int getM() {
+		return M;
+	}
+
+	public int getN() {
+		return N;
+	}
+	
 	
 	
 

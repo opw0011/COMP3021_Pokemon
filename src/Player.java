@@ -38,6 +38,12 @@ public class Player {
 	public void setNumPokeBalls(int numPokeBalls) {
 		this.numPokeBalls = numPokeBalls;
 	}
+
+	@Override
+	public String toString() {
+		return "Player [row=" + row + ", col=" + col + ", numPokeBalls=" + numPokeBalls + ", pkmCaught=" + pkmCaught
+				+ ", pathVisited=" + pathVisited + "]";
+	}
 	
 	
 

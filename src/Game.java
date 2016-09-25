@@ -3,13 +3,15 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
 import java.io.BufferedReader;
 
 public class Game {
-	Map map;
-	Player player;
-	ArrayList<Station> stations = new ArrayList<Station>();
-	ArrayList<Pokemon> pokemons = new ArrayList<Pokemon>();
+	private Map map;
+	private Player player;
+	private ArrayList<Station> stations = new ArrayList<Station>();
+	private ArrayList<Pokemon> pokemons = new ArrayList<Pokemon>();
 	
 	public void initialize(File inputFile) throws Exception{
 		BufferedReader br = new BufferedReader(new FileReader(inputFile));
@@ -105,8 +107,27 @@ public class Game {
 		
 		System.out.println(pokemons);
 		System.out.println(stations);
+		System.out.println(player);
 		
 		br.close();
+	}
+	
+	public int findPath(int row, int col) {
+		if(row < 0 || col < 0 || row >= map.getM() || col >= map.getN())
+			return -999;
+		
+		Map.MapType curCell = map.getCell(row, col);
+		switch (curCell) {
+		case WALL:
+			return -999;
+		case DEST:
+			return 1;
+		default:
+			break;
+		}
+
+		
+		return Math.max(findPath(row-1, col), Math.max(findPath(row, col+1), Math.max(findPath(row-1, col), findPath(row, col-1)))) ;
 	}
 	
 	public static void main(String[] args) throws Exception{
@@ -123,9 +144,12 @@ public class Game {
 		
 		Game game = new Game();
 		game.initialize(inputFile);
+		
+		System.out.println(game.findPath(game.player.getRow(), game.player.getCol()));
 		// TO DO 
 		// Read the configures of the map and pokemons from the file inputFile
 		// and output the results to the file outputFile
+		
 	}
 	
 }
