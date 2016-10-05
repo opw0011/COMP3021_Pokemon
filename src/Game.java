@@ -7,12 +7,22 @@ import java.util.regex.Pattern;
 
 import java.io.BufferedReader;
 
+/**
+ * Class for the main game
+ * @author opw
+ *
+ */
 public class Game {
 	private Map map;
 	private Player player;
 	private ArrayList<Station> stations = new ArrayList<Station>();
 	private ArrayList<Pokemon> pokemons = new ArrayList<Pokemon>();
 	
+	/**
+	 * Initialize the game
+	 * @param inputFile input file that contains the game data
+	 * @throws Exception cannot parse map
+	 */
 	public void initialize(File inputFile) throws Exception{
 		BufferedReader br = new BufferedReader(new FileReader(inputFile));
 		
@@ -86,11 +96,11 @@ public class Game {
 				int row = Integer.parseInt(pkmMatch.group(1));
 				int col = Integer.parseInt(pkmMatch.group(2));
 				String name = pkmMatch.group(3);
-				String species = pkmMatch.group(4);
+				String types = pkmMatch.group(4);
 				int cp = Integer.parseInt(pkmMatch.group(5));
 				int reqBalls = Integer.parseInt(pkmMatch.group(6));				
 				// insert new pokemon
-				pokemons.add(new Pokemon(row, col, name, species, cp, reqBalls));		
+				pokemons.add(new Pokemon(row, col, name, types, cp, reqBalls));		
 			}
 			// parse pokeshop
 			else if(pksMatch.find()) {
@@ -112,24 +122,73 @@ public class Game {
 		br.close();
 	}
 	
-	public int findPath(int row, int col) {
-		if(row < 0 || col < 0 || row >= map.getM() || col >= map.getN())
-			return -999;
-		
-		Map.MapType curCell = map.getCell(row, col);
+	
+	public boolean findPath(Cell current) {
+		// return false if out of map boundary
+		if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN())
+			return false;
+
+		// check current cell type
+		Map.MapType curCell = map.getCellType(current);
 		switch (curCell) {
 		case WALL:
-			return -999;
+			return false;
 		case DEST:
-			return 1;
+			return true;
 		default:
 			break;
 		}
+		
+		Cell up = new Cell(current.getRow() - 1, current.getCol());
+		Cell right = new Cell(current.getRow(), current.getCol() + 1);
+		Cell down = new Cell(current.getRow() + 1, current.getCol());
+		Cell left = new Cell(current.getRow(), current.getCol() - 1);
+		
+		// north
+		if(player.hasVisitedCell(up) == false) {
+			player.addVistedCell(up);
+			if(findPath(up))
+				return true;
+			else
+				player.removeLastVisitedCell(up);
+		}
 
 		
-		return Math.max(findPath(row-1, col), Math.max(findPath(row, col+1), Math.max(findPath(row-1, col), findPath(row, col-1)))) ;
+		// east
+		if(player.hasVisitedCell(right) == false) {
+			player.addVistedCell(right);
+			if(findPath(right))
+				return true;
+			else
+				player.removeLastVisitedCell(right);
+		}
+		
+		// south
+		if(player.hasVisitedCell(down) == false) {
+			player.addVistedCell(down);
+			if(findPath(down))
+				return true;
+			else
+				player.removeLastVisitedCell(down);
+		}
+		
+		// west
+		if(player.hasVisitedCell(left) == false) {
+			player.addVistedCell(left);
+			if(findPath(left))
+				return true;
+			else
+				player.removeLastVisitedCell(left);
+		}
+		
+		return false;
 	}
 	
+	/**
+	 * Main function to be called first
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception{
 		File inputFile = new File("./sampleIn.txt");
 		File outputFile = new File("./sampleOut.txt");
@@ -145,7 +204,11 @@ public class Game {
 		Game game = new Game();
 		game.initialize(inputFile);
 		
-		System.out.println(game.findPath(game.player.getRow(), game.player.getCol()));
+		// visit the cell at the initial point
+		Cell initialPt = new Cell(game.player.getRow(), game.player.getCol());
+		game.player.addVistedCell(initialPt);
+		System.out.println(game.findPath(initialPt));
+		game.player.printVistedPath();
 		// TO DO 
 		// Read the configures of the map and pokemons from the file inputFile
 		// and output the results to the file outputFile

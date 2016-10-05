@@ -1,5 +1,10 @@
 import java.util.ArrayList;
 
+/**
+ * Class for storing Player information
+ * @author opw
+ *
+ */
 public class Player {
 	private int row;
 	private int col;
@@ -7,6 +12,11 @@ public class Player {
 	private ArrayList<Pokemon> pkmCaught;
 	private ArrayList<Cell> pathVisited;
 	
+	/**
+	 * Constructor
+	 * @param row initial row position
+	 * @param col initial column position 
+	 */
 	public Player(int row, int col) {
 		this.row = row;
 		this.col = col;
@@ -43,6 +53,36 @@ public class Player {
 	public String toString() {
 		return "Player [row=" + row + ", col=" + col + ", numPokeBalls=" + numPokeBalls + ", pkmCaught=" + pkmCaught
 				+ ", pathVisited=" + pathVisited + "]";
+	}
+	
+	
+	public void addVistedCell(Cell cell) {
+		if(cell != null)
+			pathVisited.add(cell);
+	}
+	
+//	public void addVistedCell(int col, int row) {
+//		pathVisited.add(new Cell(col, row));
+//	}
+//	
+//	public void removeLastVisitedCell(int col, int row) {
+//		pathVisited.remove(pathVisited.lastIndexOf(new Cell(col, row)));
+//	}
+	
+	public void removeLastVisitedCell(Cell cell) {
+		pathVisited.remove(pathVisited.lastIndexOf(cell));
+	}
+	
+	public boolean hasVisitedCell(Cell cell) {
+		return pathVisited.contains(cell);
+	}
+	
+	public boolean hasVisitedCell(int row, int col) {
+		return pathVisited.contains(new Cell(row, col));
+	}
+	
+	public void printVistedPath() {
+		System.out.println(pathVisited);
 	}
 	
 	
