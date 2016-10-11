@@ -26,10 +26,67 @@ public class Pokemon extends Cell{
 		this.numRequiredBalls = numRequiredBalls;
 	}
 
+	public String getTypes() {
+		return types;
+	}
+
+	public int getCp() {
+		return cp;
+	}
+
+	public void setCp(int cp) {
+		this.cp = cp;
+	}
+
+	public int getNumRequiredBalls() {
+		return numRequiredBalls;
+	}
+
+	public void setNumRequiredBalls(int numRequiredBalls) {
+		this.numRequiredBalls = numRequiredBalls;
+	}
+
 	@Override
 	public String toString() {
 		return "Pokemon [name=" + name + ", types=" + types + ", cp=" + cp + ", numRequiredBalls="
 				+ numRequiredBalls + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + cp;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + numRequiredBalls;
+		result = prime * result + ((types == null) ? 0 : types.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Pokemon other = (Pokemon) obj;
+		if (cp != other.cp)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (numRequiredBalls != other.numRequiredBalls)
+			return false;
+		if (types == null) {
+			if (other.types != null)
+				return false;
+		} else if (!types.equals(other.types))
+			return false;
+		return true;
 	}
 	
 	

@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +19,8 @@ public class Game {
 	private Player player;
 	private ArrayList<Station> stations = new ArrayList<Station>();
 	private ArrayList<Pokemon> pokemons = new ArrayList<Pokemon>();
+	
+	private ArrayList<Player> playerList = new ArrayList<Player>();
 	
 	/**
 	 * Initialize the game
@@ -75,7 +79,7 @@ public class Game {
 			}
 		}
 		
-		map.printMap();	
+		map.printPrettyMap();	
 		
 		// to do
 		// Find the number of stations and pokemons in the map 
@@ -122,8 +126,92 @@ public class Game {
 		br.close();
 	}
 	
+	public void findPath(Cell current, Player player) {
+		// return false if out of map boundary
+		if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN())
+			return;
+		
+		// check current cell type
+		Map.MapType curCell = map.getCellType(current);
+		
+		// invalid cell
+		if(curCell == Map.MapType.WALL)	return;
+		
+		// valid cells
+		switch (curCell) {
+		case DEST:
+			System.out.println("REACH DEST");
+			playerList.add(player);
+			player.addVistedCell(current);
+			return;
+		case SUPPLY:
+			// TODO: search for station and check if it is used
+			// get num of pokeball and add to
+			// add ball to player if he has not visited the shop before, otherwise treat as normal cell
+			if(! player.hasVisitedCell(current)) {
+				for(Station station : stations) {
+					if(station.getCol() == current.getCol() && station.getRow() == current.getRow()) {
+						int numPB = station.getNumPokeBalls();
+						player.setNumPokeBalls(player.getNumPokeBalls() + numPB);
+						break;
+					}
+				}	
+			}				
+			break;
+		case POKEMON:
+			// TODO: search pokemon arraylist, see if current player has enough pokeball to catch it
+			// check if the pokemon has already been caught, if yes treat it as normal cell
+			for(Pokemon pkm : pokemons) {
+				if(pkm.getCol() == current.getCol() && pkm.getRow() == current.getRow()) {
+					// check if player has caught this pkm
+					if(! player.hasCaughtPokemon(pkm) && (player.getNumPokeBalls() >= pkm.getNumRequiredBalls())) {
+						// catch it
+						player.addCaughtPokemon(pkm);
+						player.setNumPokeBalls(player.getNumPokeBalls() - pkm.getNumRequiredBalls());
+						break;
+					}				
+				}
+			}
+			break;
+		default:
+			break;
+		}
+		
+		// visit the cell
+		player.setRow(current.getRow());
+		player.setCol(current.getCol());
+		// break the recursion if the state has no improvement
+		if( ! map.stateHasImproved(player)) {
+			System.out.println("NIP>> " + player);
+			return;
+		}
+		else
+		{
+			System.out.println("improv>> " + player);
+//			System.out.println("State " + map.getCellState(current.getRow(), current.getCol()));
+		}
+		player.addVistedCell(current);
+		
+
+		
+		Cell up = new Cell(current.getRow() - 1, current.getCol());
+		Cell right = new Cell(current.getRow(), current.getCol() + 1);
+		Cell down = new Cell(current.getRow() + 1, current.getCol());
+		Cell left = new Cell(current.getRow(), current.getCol() - 1);
+//		System.out.println(player);
+		Player player1 = new Player(player);
+		Player player2 = new Player(player);
+		Player player3 = new Player(player);
+		Player player4 = new Player(player);
+		findPath(up, player1);
+		findPath(right, player2);
+		findPath(down, player3);
+		findPath(left, player4);
+		
+	}
 	
-	public boolean findPath(Cell current) {
+	
+	public boolean findPathOld(Cell current) {
 		// return false if out of map boundary
 		if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN())
 			return false;
@@ -147,7 +235,7 @@ public class Game {
 		// north
 		if(player.hasVisitedCell(up) == false) {
 			player.addVistedCell(up);
-			if(findPath(up))
+			if(findPathOld(up))
 				return true;
 			else
 				player.removeLastVisitedCell(up);
@@ -157,7 +245,7 @@ public class Game {
 		// east
 		if(player.hasVisitedCell(right) == false) {
 			player.addVistedCell(right);
-			if(findPath(right))
+			if(findPathOld(right))
 				return true;
 			else
 				player.removeLastVisitedCell(right);
@@ -166,7 +254,7 @@ public class Game {
 		// south
 		if(player.hasVisitedCell(down) == false) {
 			player.addVistedCell(down);
-			if(findPath(down))
+			if(findPathOld(down))
 				return true;
 			else
 				player.removeLastVisitedCell(down);
@@ -175,7 +263,7 @@ public class Game {
 		// west
 		if(player.hasVisitedCell(left) == false) {
 			player.addVistedCell(left);
-			if(findPath(left))
+			if(findPathOld(left))
 				return true;
 			else
 				player.removeLastVisitedCell(left);
@@ -201,14 +289,71 @@ public class Game {
 			outputFile = new File(args[1]);
 		}
 		
+
 		Game game = new Game();
 		game.initialize(inputFile);
 		
+		// Testing
+		
+		Player pp1 = new Player(1,2);
+		pp1.setNumPokeBalls(0);
+		pp1.addVistedCell(new Cell(1,3));
+		pp1.addVistedCell(new Cell(2,3));
+		pp1.addVistedCell(new Cell(3,3));
+		pp1.addVistedCell(new Cell(2,3));
+		System.out.println(pp1.hasVisitedCell(new Cell(3,3)));
+		pp1.addCaughtPokemon(new Pokemon(2, 2, "A", "B", 0, 0));
+		System.out.println(pp1.hasCaughtPokemon(new Pokemon(2, 1, "A", "B", 0, 0)));
+//		System.out.println(game.map.stateHasImproved(pp1));
+//		Player pp2 = new Player(1,2);
+//		pp2.addVistedCell(new Cell(1,3));
+//		pp2.addVistedCell(new Cell(1,4));
+//		pp2.setNumPokeBalls(0);
+//		System.out.println(game.map.stateHasImproved(pp2));
+//		System.out.println("compare");
+//		System.out.println(pp2.compareTo(pp1));
+//		
+		System.out.println(pp1);
+		System.out.println("END TESTING");
+		
+		
 		// visit the cell at the initial point
 		Cell initialPt = new Cell(game.player.getRow(), game.player.getCol());
-		game.player.addVistedCell(initialPt);
-		System.out.println(game.findPath(initialPt));
+
+		game.findPath(initialPt, game.player);
+		
+		
+		System.out.println("PLAYERS: " +game.playerList.size() + " "+ game.playerList);
+		System.out.println("State:");
+		game.map.printMapStates();
+		
 		game.player.printVistedPath();
+		
+		// print map with visited path
+		Map visitedMap = game.map;
+		for(Player player : game.playerList) {
+			for(Cell c : player.getPathVisited()) {
+				visitedMap.insertCell(c.getRow(), c.getCol(), Map.MapType.VISITED);
+			}
+			System.out.println(player);
+			visitedMap.printPrettyMap();
+		}
+		
+		// Sort the player with the highest score
+		Collections.sort(game.playerList);
+		Player op = game.playerList.get(game.playerList.size()-1);	// last element is the highest score
+		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
+				op.getScore(), op.getNumPokeBalls(), op.getPkmCaught().size(), op.getNumDistinctPokemonType(), op.getMaxPokemonCP(), op);
+		
+		ArrayList<Cell> pathList = op.getPathVisited();
+		int i = 0;
+		for(Cell c : pathList) {
+			System.out.printf("<%s,%s>", c.getRow(), c.getCol());
+			if(i != pathList.size() - 1)	System.out.print("->");
+			i++;
+		}
+		
+		
 		// TO DO 
 		// Read the configures of the map and pokemons from the file inputFile
 		// and output the results to the file outputFile

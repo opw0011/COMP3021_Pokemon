@@ -20,11 +20,13 @@ public class Station extends Cell{
 	public int getNumPokeBalls() {
 		return numPokeBalls;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "Station [numPokeBalls=" + numPokeBalls + "]";
 	}
+
+	
 
 	
 	
