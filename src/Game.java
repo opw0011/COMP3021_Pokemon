@@ -140,9 +140,9 @@ public class Game {
 		// valid cells
 		switch (curCell) {
 		case DEST:
-			System.out.println("REACH DEST");
-			playerList.add(player);
+//			System.out.println("REACH DEST");
 			player.addVistedCell(current);
+			playerList.add(new Player(player));
 			return;
 		case SUPPLY:
 			// TODO: search for station and check if it is used
@@ -180,25 +180,34 @@ public class Game {
 		// visit the cell
 		player.setRow(current.getRow());
 		player.setCol(current.getCol());
-		// break the recursion if the state has no improvement
-		if( ! map.stateHasImproved(player)) {
-			System.out.println("NIP>> " + player);
-			return;
-		}
-		else
-		{
-			System.out.println("improv>> " + player);
-//			System.out.println("State " + map.getCellState(current.getRow(), current.getCol()));
-		}
 		player.addVistedCell(current);
 		
-
+		// break the recursion if the state has no improvement
+//		if( ! map.stateHasImproved(player)) {
+//			System.out.println("NIP>> " + player);
+//			return;
+//		}
+//		else
+//		{
+//			System.out.println("improv>> " + player);
+////			System.out.println("State " + map.getCellState(current.getRow(), current.getCol()));
+//		}
 		
+//		System.out.println(player);
+//		player.setScore();
+		if(player.getScore() < player.getStateScore(current)) {
+//			System.out.println("Low score >> " + current + player.getScore());
+			return;
+		}
+		
+		player.recordCurrentState(current);
+
+
 		Cell up = new Cell(current.getRow() - 1, current.getCol());
 		Cell right = new Cell(current.getRow(), current.getCol() + 1);
 		Cell down = new Cell(current.getRow() + 1, current.getCol());
 		Cell left = new Cell(current.getRow(), current.getCol() - 1);
-//		System.out.println(player);
+
 		Player player1 = new Player(player);
 		Player player2 = new Player(player);
 		Player player3 = new Player(player);
@@ -304,15 +313,7 @@ public class Game {
 		System.out.println(pp1.hasVisitedCell(new Cell(3,3)));
 		pp1.addCaughtPokemon(new Pokemon(2, 2, "A", "B", 0, 0));
 		System.out.println(pp1.hasCaughtPokemon(new Pokemon(2, 1, "A", "B", 0, 0)));
-//		System.out.println(game.map.stateHasImproved(pp1));
-//		Player pp2 = new Player(1,2);
-//		pp2.addVistedCell(new Cell(1,3));
-//		pp2.addVistedCell(new Cell(1,4));
-//		pp2.setNumPokeBalls(0);
-//		System.out.println(game.map.stateHasImproved(pp2));
-//		System.out.println("compare");
-//		System.out.println(pp2.compareTo(pp1));
-//		
+		
 		System.out.println(pp1);
 		System.out.println("END TESTING");
 		
@@ -324,23 +325,26 @@ public class Game {
 		
 		
 		System.out.println("PLAYERS: " +game.playerList.size() + " "+ game.playerList);
-		System.out.println("State:");
-		game.map.printMapStates();
+//		System.out.println("State:");
+//		game.map.printMapStates();
 		
-		game.player.printVistedPath();
+//		game.player.printVistedPath();
 		
 		// print map with visited path
-		Map visitedMap = game.map;
-		for(Player player : game.playerList) {
-			for(Cell c : player.getPathVisited()) {
-				visitedMap.insertCell(c.getRow(), c.getCol(), Map.MapType.VISITED);
-			}
-			System.out.println(player);
-			visitedMap.printPrettyMap();
-		}
+		
+//		for(Player player : game.playerList) {
+//			Map visitedMap = game.map.clone();
+//			for(Cell c : player.getPathVisited()) {
+//				visitedMap.insertCell(c.getRow(), c.getCol(), Map.MapType.VISITED);
+//			}
+//			System.out.println(player);
+//			visitedMap.printPrettyMap();
+//		}
 		
 		// Sort the player with the highest score
 		Collections.sort(game.playerList);
+		
+		System.out.println("================= SOLUTION ===================");
 		Player op = game.playerList.get(game.playerList.size()-1);	// last element is the highest score
 		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
 				op.getScore(), op.getNumPokeBalls(), op.getPkmCaught().size(), op.getNumDistinctPokemonType(), op.getMaxPokemonCP(), op);
@@ -350,8 +354,14 @@ public class Game {
 		for(Cell c : pathList) {
 			System.out.printf("<%s,%s>", c.getRow(), c.getCol());
 			if(i != pathList.size() - 1)	System.out.print("->");
+			else System.out.println();
 			i++;
 		}
+		Map visitedMap = game.map.clone();
+		for(Cell c : op.getPathVisited()) {
+			visitedMap.insertCell(c.getRow(), c.getCol(), Map.MapType.VISITED);
+		}
+		visitedMap.printPrettyMap();
 		
 		
 		// TO DO 

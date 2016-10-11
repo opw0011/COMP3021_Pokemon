@@ -5,7 +5,7 @@ import java.util.Arrays;
  * @author opw
  *
  */
-public class Map {
+public class Map implements Cloneable{
 	private MapType[][] cells;
 	private final int M;
 	private final int N;
@@ -13,7 +13,7 @@ public class Map {
 		WALL, EMPTY, START, DEST, SUPPLY, POKEMON, VISITED
 	}
 	
-	private Player[][] cellState;
+//	private Player[][] cellState;
 	
 	/**
 	 * Constructor
@@ -24,7 +24,7 @@ public class Map {
 		this.M = M;
 		this.N = N;
 		cells = new MapType[M][N];
-		cellState = new Player[M][N];
+//		cellState = new Player[M][N];
 	}
 	
 //	public void setCellState(Player player) {
@@ -36,34 +36,34 @@ public class Map {
 //		}
 //	}
 //	
-	public boolean stateHasImproved(Player player) {
-		int r = player.getRow();
-		int c = player.getCol();
-		if(cellState[r][c] == null) {
-			cellState[r][c] = player;
-			return true;
-		}
-		
-		// state not improved
-		if(player.compareTo(cellState[r][c]) > 0){
-			cellState[r][c] = player;	// set player as optimal state
-			return true;
-		}
-		
-		return false;		
-//		System.out.println("COMPARING:::: " + cellState[r][c] + " &&& " + player);
-//		return (player.compareTo(cellState[r][c]) > 0);
-	}
+//	public boolean stateHasImproved(Player player) {
+//		int r = player.getRow();
+//		int c = player.getCol();
+//		if(cellState[r][c] == null) {
+//			cellState[r][c] = player;
+//			return true;
+//		}
+//		
+//		// state not improved
+//		if(player.compareTo(cellState[r][c]) > 0){
+//			cellState[r][c] = player;	// set player as optimal state
+//			return true;
+//		}
+//		
+//		return false;		
+////		System.out.println("COMPARING:::: " + cellState[r][c] + " &&& " + player);
+////		return (player.compareTo(cellState[r][c]) > 0);
+//	}
 	
-	public void printMapStates() {
-		for(int i = 0; i < M; i++) {
-			for(int j = 0; j < N; j++) {
-				if(cellState[i][j] != null)
-					System.out.println(i + "," + j + " == " + cellState[i][j]);
-			}
-		}
-	}
-	
+//	public void printMapStates() {
+//		for(int i = 0; i < M; i++) {
+//			for(int j = 0; j < N; j++) {
+//				if(cellState[i][j] != null)
+//					System.out.println(i + "," + j + " == " + cellState[i][j]);
+//			}
+//		}
+//	}
+//	
 	/**
 	 * Insert the cell type to the map
 	 * @param row
@@ -138,9 +138,23 @@ public class Map {
 		return N;
 	}
 	
-	public Player getCellState(int row, int col) {
-		return cellState[row][col];
+//	public Player getCellState(int row, int col) {
+//		return cellState[row][col];
+//	}
+
+	@Override
+	public Map clone() throws CloneNotSupportedException {
+		Map newMap = new Map(M, N);		
+		for(int i = 0; i < M; i++) {
+			for(int j = 0; j < N; j++) {
+				newMap.cells[i][j] = this.cells[i][j];
+//				newMap.cellState[i][j] = this.cellState[i][j];
+			}
+		}
+		return newMap;
 	}
+	
+	
 	
 	
 	
