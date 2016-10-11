@@ -24,7 +24,6 @@ public class Player implements Comparable<Player>{
 	public Player(int row, int col) {
 		this.row = row;
 		this.col = col;
-//		numPokeBalls = 0;
 		pkmCaught = new ArrayList<Pokemon>();
 		pathVisited = new ArrayList<Cell>();	
 		optimalCellState = new HashMap<Cell, Integer>();
@@ -95,14 +94,6 @@ public class Player implements Comparable<Player>{
 			pkmCaught.add(pkm);
 	}
 	
-//	public void addVistedCell(int col, int row) {
-//		pathVisited.add(new Cell(col, row));
-//	}
-//	
-//	public void removeLastVisitedCell(int col, int row) {
-//		pathVisited.remove(pathVisited.lastIndexOf(new Cell(col, row)));
-//	}
-	
 	public void removeLastVisitedCell(Cell cell) {
 		pathVisited.remove(pathVisited.lastIndexOf(cell));
 	}
@@ -111,9 +102,9 @@ public class Player implements Comparable<Player>{
 		return pathVisited.contains(cell);
 	}
 	
-	public boolean hasVisitedCell(int row, int col) {
-		return pathVisited.contains(new Cell(row, col));
-	}
+//	public boolean hasVisitedCell(int row, int col) {
+//		return pathVisited.contains(new Cell(row, col));
+//	}
 	
 	public boolean hasCaughtPokemon(Pokemon pkm) {
 		return pkmCaught.contains(pkm);
@@ -145,7 +136,7 @@ public class Player implements Comparable<Player>{
 	/**
 	 * Return score of a player
 	 * scoring function = < NB + 5 * NP + 10 * NS + MCP - Steps>
-	 * @return
+	 * @return score
 	 */
 	public int getScore() {
 		int score = 0;
@@ -162,7 +153,10 @@ public class Player implements Comparable<Player>{
 //		if(this.getNumPokeBalls() > o.getNumPokeBalls() || this.pkmCaught.size() > o.pkmCaught.size()) {
 //			return 1;
 //		}
-		if(this.getScore() > o.getScore()) {
+		if(this.getScore() == o.getScore()){
+			return 0;
+		}	
+		else if(this.getScore() > o.getScore()) {
 			return 1;
 		}
 		return -1;
