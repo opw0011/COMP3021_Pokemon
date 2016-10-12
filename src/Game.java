@@ -4,6 +4,11 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,7 +27,8 @@ public class Game {
 	private ArrayList<Station> stations = new ArrayList<Station>();
 	private ArrayList<Pokemon> pokemons = new ArrayList<Pokemon>();
 	
-	private ArrayList<Player> playerList = new ArrayList<Player>();
+	private Player optPlayer;
+	private int playerCount = 0;
 	
 	/**
 	 * Initialize the game
@@ -144,7 +150,9 @@ public class Game {
 		case DEST:
 //			System.out.println("REACH DEST");
 			player.addVistedCell(current);
-			playerList.add(new Player(player));
+//			playerList.add(new Player(player));
+			this.setOptimalPlayer(player);
+//			System.out.println(player);
 			return;
 		case SUPPLY:
 			// search for station and check if it is used
@@ -208,6 +216,14 @@ public class Game {
 		findPath(left, player4);		
 	}
 	
+	private void setOptimalPlayer(Player p) {
+		if(this.optPlayer == null || p.getScore() > this.optPlayer.getScore()) {
+			this.optPlayer = new Player(p);
+		}
+		playerCount ++;
+	}
+	
+
 	
 
 	/**
@@ -232,7 +248,9 @@ public class Game {
 		game.initialize(inputFile);
 		
 		// Testing
+//		System.out.println(game.BFS(new Cell(8,0), new Cell(1,11)));		
 		long startTime, stopTime;		
+		
 		
 		// visit the cell at the initial point
 		Cell initialPt = new Cell(game.player.getRow(), game.player.getCol());
@@ -241,51 +259,35 @@ public class Game {
 		game.findPath(initialPt, game.player);
 		stopTime = System.nanoTime();
 		System.out.println("FindPath Time: " + (stopTime - startTime) / 1000000000.0);
-		System.out.println("Player List size: " + game.playerList.size());
 		
-		startTime = System.nanoTime();
-		// Sort the player with the highest score
-		Collections.sort(game.playerList);
-		
-		stopTime = System.nanoTime();
-		System.out.println("Sorting TIme: " + (stopTime - startTime) / 1000000000.0);
 		
 		System.out.println("================= SOLUTION ===================");
-		Player op = game.playerList.get(game.playerList.size()-1);	// last element is the highest score
+//		Player op = game.playerList.get(game.playerList.size()-1);	// last element is the highest score
+//		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
+//				op.getScore(), op.getNumPokeBalls(), op.getPkmCaught().size(), op.getNumDistinctPokemonType(), op.getMaxPokemonCP(), op);
+		System.out.println("Total possible path = " + game.playerCount);
 		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
-				op.getScore(), op.getNumPokeBalls(), op.getPkmCaught().size(), op.getNumDistinctPokemonType(), op.getMaxPokemonCP(), op);
-		
-		ArrayList<Cell> pathList = op.getPathVisited();
-		int i = 0;
-		for(Cell c : pathList) {
-			System.out.printf("<%s,%s>", c.getRow(), c.getCol());
-			if(i != pathList.size() - 1)	System.out.print("->");
-			else System.out.println();
-			i++;
-		}
-		Map visitedMap = game.map.clone();
-		for(Cell c : op.getPathVisited()) {
-			visitedMap.insertCell(c.getRow(), c.getCol(), Map.MapType.VISITED);
-		}
-		visitedMap.printPrettyMap();
-		
+				game.optPlayer.getScore(), game.optPlayer.getNumPokeBalls(), game.optPlayer.getPkmCaught().size(), 
+				game.optPlayer.getNumDistinctPokemonType(), game.optPlayer.getMaxPokemonCP(), game.optPlayer);		
 		
 		// TO DO 
 		// Read the configures of the map and pokemons from the file inputFile
 		// and output the results to the file outputFile
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
-		bw.write(String.format("%d", op.getScore()));
+		bw.write(String.format("%d", game.optPlayer.getScore()));
 		bw.newLine();
 		bw.write(String.format("%d:%d:%d:%d", 
-				op.getNumPokeBalls(), op.getPkmCaught().size(), op.getNumDistinctPokemonType(), op.getMaxPokemonCP()));
+				game.optPlayer.getNumPokeBalls(), game.optPlayer.getPkmCaught().size(), game.optPlayer.getNumDistinctPokemonType(), game.optPlayer.getMaxPokemonCP()));
 		bw.newLine();
 		int j = 0;
+		ArrayList<Cell> pathList = game.optPlayer.getPathVisited();
 		for(Cell c : pathList) {
 			bw.write(String.format("<%s,%s>", c.getRow(), c.getCol()));
 			if(j != pathList.size() - 1)	
 				bw.write("->");
 			j++;
 		}
+
 		bw.close();
 	}
 	

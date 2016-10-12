@@ -33,16 +33,18 @@ public class Player implements Comparable<Player>{
 		this.row = player.row;
 		this.col = player.col;
 		this.numPokeBalls = player.numPokeBalls;
-		this.pkmCaught = new ArrayList<Pokemon>();
-		for(Pokemon p : player.pkmCaught) {
-			this.pkmCaught.add(p);
-		}
-		this.pathVisited = new ArrayList<Cell>();
-		for(Cell c : player.pathVisited) {
-			this.pathVisited.add(c);
-		}		
-		this.optimalCellState = new HashMap<Cell, Integer>();
-		player.optimalCellState.forEach((key, value) -> {this.optimalCellState.put(key, value);});
+		this.pkmCaught = new ArrayList<Pokemon>(player.pkmCaught);
+//		for(Pokemon p : player.pkmCaught) {
+//			this.pkmCaught.add(p);
+//		}
+		this.pathVisited = new ArrayList<Cell>(player.pathVisited);
+//		this.pathVisited = new ArrayList<Cell>();
+//		for(Cell c : player.pathVisited) {
+//			this.pathVisited.add(c);
+//		}		
+		this.optimalCellState = (HashMap<Cell, Integer>) player.optimalCellState.clone();
+//		this.optimalCellState = new HashMap<Cell, Integer>();
+//		player.optimalCellState.forEach((key, value) -> {this.optimalCellState.put(key, value);});
 	}
 
 	public int getRow() {
