@@ -13,8 +13,8 @@ public class Map implements Cloneable{
 	public enum MapType {
 		WALL, EMPTY, START, DEST, SUPPLY, POKEMON, VISITED
 	}
-	private HashMap<Cell, Integer> optimalCellStates = new HashMap<Cell, Integer>();
-	private HashMap<Player, Integer> optimalCellStatesNew = new HashMap<Player, Integer>();
+//	private HashMap<Cell, Integer> optimalCellStates = new HashMap<Cell, Integer>();
+	private HashMap<Player, Integer> optimalStates = new HashMap<Player, Integer>();
 	/**
 	 * Constructor
 	 * @param M total rows in the map
@@ -111,25 +111,14 @@ public class Map implements Cloneable{
 		return newMap;
 	}
 	
-	public void recordCurrentState(Cell cell, int score) {
-		if(cell != null)
-			optimalCellStates.put(cell, score);
-	}
-	
-	public int getStateScore(Cell c) {
-		if(optimalCellStates.containsKey(c))
-			return optimalCellStates.get(c);
-		return Integer.MIN_VALUE;
-	}
-	
-	public void recordCurrentStateNew(Player playerState, int score) {
+	public void setPlayerState(Player playerState, int score) {
 		if(playerState != null)
-			optimalCellStatesNew.put(playerState, score);
+			optimalStates.put(playerState, score);
 	}
 	
-	public int getStateScoreNew(Player playerState) {
-		if(optimalCellStatesNew.containsKey(playerState))
-			return optimalCellStatesNew.get(playerState);
+	public int getPlayerState(Player playerState) {
+		if(optimalStates.containsKey(playerState))
+			return optimalStates.get(playerState);
 		return Integer.MIN_VALUE;
 	}
 	

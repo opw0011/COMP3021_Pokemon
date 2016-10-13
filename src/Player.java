@@ -13,8 +13,6 @@ public class Player implements Comparable<Player>{
 	private int numPokeBalls = 0;
 	private ArrayList<Pokemon> pkmCaught;
 	private ArrayList<Cell> pathVisited;
-	private HashMap<Cell, Integer> optimalCellState;
-//	private int score = 0;
 	
 	/**
 	 * Constructor
@@ -26,7 +24,6 @@ public class Player implements Comparable<Player>{
 		this.col = col;
 		pkmCaught = new ArrayList<Pokemon>();
 		pathVisited = new ArrayList<Cell>();	
-		optimalCellState = new HashMap<Cell, Integer>();
 	}
 	
 	public Player(Player player) {
@@ -34,17 +31,7 @@ public class Player implements Comparable<Player>{
 		this.col = player.col;
 		this.numPokeBalls = player.numPokeBalls;
 		this.pkmCaught = new ArrayList<Pokemon>(player.pkmCaught);
-//		for(Pokemon p : player.pkmCaught) {
-//			this.pkmCaught.add(p);
-//		}
 		this.pathVisited = new ArrayList<Cell>(player.pathVisited);
-//		this.pathVisited = new ArrayList<Cell>();
-//		for(Cell c : player.pathVisited) {
-//			this.pathVisited.add(c);
-//		}		
-		this.optimalCellState = (HashMap<Cell, Integer>) player.optimalCellState.clone();
-//		this.optimalCellState = new HashMap<Cell, Integer>();
-//		player.optimalCellState.forEach((key, value) -> {this.optimalCellState.put(key, value);});
 	}
 
 	public int getRow() {
@@ -104,10 +91,6 @@ public class Player implements Comparable<Player>{
 		return pathVisited.contains(cell);
 	}
 	
-//	public boolean hasVisitedCell(int row, int col) {
-//		return pathVisited.contains(new Cell(row, col));
-//	}
-	
 	public boolean hasCaughtPokemon(Pokemon pkm) {
 		return pkmCaught.contains(pkm);
 	}
@@ -162,17 +145,6 @@ public class Player implements Comparable<Player>{
 			return 1;
 		}
 		return -1;
-	}
-	
-	public void recordCurrentState(Cell cell) {
-		if(cell != null)
-			optimalCellState.put(cell, this.getScore());
-	}
-	
-	public int getStateScore(Cell c) {
-		if(optimalCellState.containsKey(c))
-			return optimalCellState.get(c);
-		return Integer.MIN_VALUE;
 	}
 	
 	/**

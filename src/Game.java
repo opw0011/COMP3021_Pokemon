@@ -203,13 +203,13 @@ public class Game {
 		// break the recursion if the state has no improvement
 		int currentScore = player.getScore();
 		Player currentPlayerState = player.getPlayerState();
-		if(currentScore < map.getStateScoreNew(currentPlayerState)) {
+		if(currentScore < map.getPlayerState(currentPlayerState)) {
 //			System.out.println("Low score >> " + current + player.getScore());
 			return;
 		}
 		
 		// current score improved, update the state
-		map.recordCurrentStateNew(currentPlayerState, currentScore);
+		map.setPlayerState(currentPlayerState, currentScore);
 
 		Cell up = new Cell(current.getRow() - 1, current.getCol());
 		Cell right = new Cell(current.getRow(), current.getCol() + 1);
