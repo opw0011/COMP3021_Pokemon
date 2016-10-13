@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -26,9 +27,15 @@ public class Game {
 	private Player player;
 	private ArrayList<Station> stations = new ArrayList<Station>();
 	private ArrayList<Pokemon> pokemons = new ArrayList<Pokemon>();
+	private Cell startPoint;
+	private Cell destPoint;	
 	
 	private Player optPlayer;
 	private int playerCount = 0;
+	
+	private int maxScore;
+	private ArrayList<Cell> optmPath;
+	private HashMap<Cell, HashMap<Cell, Integer>> distanceTable = new HashMap<Cell, HashMap<Cell, Integer>>();
 	
 	/**
 	 * Initialize the game
@@ -66,11 +73,13 @@ public class Game {
 				case 'B':
 					// player starting point
 					player = new Player(i, j);
+					startPoint = new Cell(i, j);
 					map.insertCell(i, j, Map.MapType.START);
 					break;
 				case 'D':
 					// player destination point
 					map.insertCell(i, j, Map.MapType.DEST);
+					destPoint = new Cell(i, j);
 					break;
 				case 'S':
 					// supply station
@@ -221,9 +230,161 @@ public class Game {
 			this.optPlayer = new Player(p);
 		}
 		playerCount ++;
+		System.out.println(p);
 	}
 	
+	// must pass in Cell type, subclass not works
+	private int findShortestPath(Cell start, Cell dest) {		
+		// BFS
+		Queue<Cell> queue = new LinkedList<Cell>();
+		HashMap<Cell, Integer> distanceMap= new HashMap<Cell, Integer>();
+		HashSet<Cell> visitedList = new HashSet<Cell>();
+		queue.add(start);
+		distanceMap.put(start, 0);
+		while(! queue.isEmpty()) {
+			Cell current = queue.poll();
+			visitedList.add(current);
 
+			// out of boundaries
+			if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN()) continue;
+			// wall
+			Map.MapType curCell = map.getCellType(current);
+			if(current.equals(dest)) break;
+			if(curCell == Map.MapType.WALL) continue;
+			if(curCell == Map.MapType.DEST)	continue;	// DEST act like a wall
+			
+			
+			ArrayList<Cell> cellList = new ArrayList<Cell>();
+			cellList.add(new Cell(current.getRow() - 1, current.getCol()));	// up
+			cellList.add(new Cell(current.getRow(), current.getCol() + 1));	// right
+			cellList.add(new Cell(current.getRow() + 1, current.getCol()));	// down
+			cellList.add(new Cell(current.getRow(), current.getCol() - 1));	// left			
+			
+			int newDistance = distanceMap.get(current) + 1;
+			// visit 4 directions
+			for(Cell cell : cellList) {
+				if(!visitedList.contains(cell)) {
+					queue.add(cell);
+					if(!distanceMap.containsKey(cell) || newDistance < distanceMap.get(current))
+						distanceMap.put(cell, newDistance);
+				}
+			}
+		}
+		
+		if(distanceMap.containsKey(dest)) {
+			return distanceMap.get(dest);
+		}
+		return 0;	// no path found
+	}
+	
+	
+	
+	private void findOptimalPath() {
+		// generate possible and valid permutation of B,P1...Pn,S1...Sn,D
+		// return the path with max score
+		ArrayList<Cell> list = new ArrayList<Cell>();
+		list.addAll(this.stations);
+		list.addAll(this.pokemons);
+		list.add(this.destPoint);
+		permute(list, 0);		
+	}
+	
+    private void permute(ArrayList<Cell> arr, int k){
+        for(int i = k; i < arr.size(); i++){
+            java.util.Collections.swap(arr, i, k);
+            permute(arr, k+1);
+            java.util.Collections.swap(arr, k, i);
+        }
+        
+        // a new permutation is generated here
+        if (k == arr.size() -1){
+//        	System.out.println(arr.size());
+        	int score = 0;
+        	int numPokeBall = 0;
+        	int maxCp = 0;
+        	HashSet<String> distinctType = new HashSet<String>();
+        	ArrayList<Cell> list = (ArrayList<Cell>) arr.clone();
+        	list.add(0, this.startPoint);
+        	// compute two adjacent cell
+        	for(int i = 0; i < list.size() - 1; i++) {
+        		Cell first = list.get(i);
+        		Cell second = list.get(i + 1);
+        		
+        		if(map.getCellType(first) == Map.MapType.DEST) break;	// already reach destination
+        		
+        		switch(map.getCellType(second)) {
+        		case SUPPLY:
+        			int numBall = ((Station)second).getNumPokeBalls();
+        			numPokeBall += numBall;        			
+        			break;
+        		case POKEMON:
+        			Pokemon pkm = (Pokemon)second;
+        			int reqBalls = pkm.getNumRequiredBalls();
+        			if(numPokeBall >= reqBalls) {
+        				// catch pkm
+        				numPokeBall -= reqBalls;
+        				distinctType.add(pkm.getTypes());
+        				score += 5;
+        				if(pkm.getCp() > maxCp)	maxCp = pkm.getCp();
+        			}        			
+        			break;
+				default:
+					break;
+        		
+        		}        		
+        		Cell firstCell = new Cell(first.getRow(), first.getCol());
+        		Cell secondCell = new Cell(second.getRow(), second.getCol());
+        		if(distanceTable.containsKey(firstCell) && distanceTable.get(firstCell).containsKey(secondCell)) {
+        			score -= distanceTable.get(firstCell).get(secondCell);
+        		}
+        		else {
+        			int s = findShortestPath(firstCell, secondCell);
+        			HashMap<Cell, Integer> map;
+        			if(distanceTable.containsKey(firstCell)) {
+//        				distanceTable.put(firstCell, v)
+        				map = distanceTable.get(firstCell);
+        			}
+        			else {
+        				map = new HashMap<Cell, Integer>();
+        				distanceTable.put(firstCell, map);
+        			}
+        			map.put(secondCell, s);    
+        			score -= s;
+        		}
+//        		score -= findShortestPath(firstCell, secondCell);       		
+        	}
+        	
+        	for(Cell cell : list) {
+        		switch(map.getCellType(cell)) {
+        		case SUPPLY:
+        			System.out.print(" S ");
+        			break;
+        		case POKEMON:
+        			System.out.print(" P ");
+        			break;
+        		case DEST:
+        			System.out.print(" D ");
+        			break;
+        		case START:
+        			System.out.print(" B ");
+        			break;
+        		default:
+        			System.out.print(" ? ");
+        			break;
+        		}
+        	}
+    		score += numPokeBall;
+    		score += 10 * distinctType.size();
+    		score += maxCp;
+    		if(score > this.maxScore) {
+    			this.maxScore = score;
+    			this.optmPath = list;
+    		}
+//        	System.out.println(score);
+//            System.out.println(Arrays.toString(arr.toArray()));
+        	
+        }
+    }
 	
 
 	/**
@@ -250,16 +411,35 @@ public class Game {
 		// Testing
 //		System.out.println(game.BFS(new Cell(8,0), new Cell(1,11)));		
 		long startTime, stopTime;		
+//		System.out.println(game.findShortestPath(new Cell(4, 4), new Cell(4,19)));
 		
+//		
+//		startTime = System.nanoTime();
+//		game.findOptimalPath();
+//		stopTime = System.nanoTime();
+//		System.out.println("Time: " + (stopTime - startTime) / 1000000000.0);
+//		System.out.println();
+//		System.out.println("OPTM SCORE: " + game.maxScore + "\n" + game.optmPath);
+		
+//		ArrayList<ArrayList<Cell>> paths = new ArrayList<ArrayList<Cell>>();
+//		System.out.println(game.generatePath(paths));
+		
+//		startTime = System.nanoTime();
+////		for(int i = 0; i <= 1000000; i++)
+////			game.findShortestPath(new Cell(8,0), new Cell(8,4));
+////		System.out.println(game.findShortestPath(new Cell(8,0), new Cell(1,11)));
+//			
+//		stopTime = System.nanoTime();
+//		System.out.println("BFS Time: " + (stopTime - startTime) / 1000000000.0);
 		
 		// visit the cell at the initial point
 		Cell initialPt = new Cell(game.player.getRow(), game.player.getCol());
 
 		startTime = System.nanoTime();
-		game.findPath(initialPt, game.player);
+		game.findPath(initialPt, game.player);	// recursion find path
 		stopTime = System.nanoTime();
 		System.out.println("FindPath Time: " + (stopTime - startTime) / 1000000000.0);
-		
+			
 		
 		System.out.println("================= SOLUTION ===================");
 //		Player op = game.playerList.get(game.playerList.size()-1);	// last element is the highest score
