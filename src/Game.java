@@ -33,10 +33,6 @@ public class Game {
 	private Player optPlayer;
 	private int playerCount = 0;
 	
-	private int maxScore;
-	private ArrayList<Cell> optmPath;
-	private HashMap<Cell, HashMap<Cell, Integer>> distanceTable = new HashMap<Cell, HashMap<Cell, Integer>>();
-	
 	/**
 	 * Initialize the game
 	 * @param inputFile input file that contains the game data
@@ -143,6 +139,11 @@ public class Game {
 		br.close();
 	}
 	
+	/**
+	 * Recursively find a optimal path with highest score
+	 * @param current initial cell
+	 * @param player initial player
+	 */
 	public void findPath(Cell current, Player player) {
 		// return false if out of map boundary
 		if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN())
@@ -277,116 +278,6 @@ public class Game {
 		}
 		return 0;	// no path found
 	}
-	
-	
-	
-	private void findOptimalPath() {
-		// generate possible and valid permutation of B,P1...Pn,S1...Sn,D
-		// return the path with max score
-		ArrayList<Cell> list = new ArrayList<Cell>();
-		list.addAll(this.stations);
-		list.addAll(this.pokemons);
-		list.add(this.destPoint);
-		permute(list, 0);		
-	}
-	
-    private void permute(ArrayList<Cell> arr, int k){
-        for(int i = k; i < arr.size(); i++){
-            java.util.Collections.swap(arr, i, k);
-            permute(arr, k+1);
-            java.util.Collections.swap(arr, k, i);
-        }
-        
-        // a new permutation is generated here
-        if (k == arr.size() -1){
-//        	System.out.println(arr.size());
-        	int score = 0;
-        	int numPokeBall = 0;
-        	int maxCp = 0;
-        	HashSet<String> distinctType = new HashSet<String>();
-        	ArrayList<Cell> list = (ArrayList<Cell>) arr.clone();
-        	list.add(0, this.startPoint);
-        	// compute two adjacent cell
-        	for(int i = 0; i < list.size() - 1; i++) {
-        		Cell first = list.get(i);
-        		Cell second = list.get(i + 1);
-        		
-        		if(map.getCellType(first) == Map.MapType.DEST) break;	// already reach destination
-        		
-        		switch(map.getCellType(second)) {
-        		case SUPPLY:
-        			int numBall = ((Station)second).getNumPokeBalls();
-        			numPokeBall += numBall;        			
-        			break;
-        		case POKEMON:
-        			Pokemon pkm = (Pokemon)second;
-        			int reqBalls = pkm.getNumRequiredBalls();
-        			if(numPokeBall >= reqBalls) {
-        				// catch pkm
-        				numPokeBall -= reqBalls;
-        				distinctType.add(pkm.getTypes());
-        				score += 5;
-        				if(pkm.getCp() > maxCp)	maxCp = pkm.getCp();
-        			}        			
-        			break;
-				default:
-					break;
-        		
-        		}        		
-        		Cell firstCell = new Cell(first.getRow(), first.getCol());
-        		Cell secondCell = new Cell(second.getRow(), second.getCol());
-        		if(distanceTable.containsKey(firstCell) && distanceTable.get(firstCell).containsKey(secondCell)) {
-        			score -= distanceTable.get(firstCell).get(secondCell);
-        		}
-        		else {
-        			int s = findShortestPath(firstCell, secondCell);
-        			HashMap<Cell, Integer> map;
-        			if(distanceTable.containsKey(firstCell)) {
-//        				distanceTable.put(firstCell, v)
-        				map = distanceTable.get(firstCell);
-        			}
-        			else {
-        				map = new HashMap<Cell, Integer>();
-        				distanceTable.put(firstCell, map);
-        			}
-        			map.put(secondCell, s);    
-        			score -= s;
-        		}
-//        		score -= findShortestPath(firstCell, secondCell);       		
-        	}
-        	
-        	for(Cell cell : list) {
-        		switch(map.getCellType(cell)) {
-        		case SUPPLY:
-        			System.out.print(" S ");
-        			break;
-        		case POKEMON:
-        			System.out.print(" P ");
-        			break;
-        		case DEST:
-        			System.out.print(" D ");
-        			break;
-        		case START:
-        			System.out.print(" B ");
-        			break;
-        		default:
-        			System.out.print(" ? ");
-        			break;
-        		}
-        	}
-    		score += numPokeBall;
-    		score += 10 * distinctType.size();
-    		score += maxCp;
-    		if(score > this.maxScore) {
-    			this.maxScore = score;
-    			this.optmPath = list;
-    		}
-//        	System.out.println(score);
-//            System.out.println(Arrays.toString(arr.toArray()));
-        	
-        }
-    }
-    
 
 	/**
 	 * Main function to be called first
@@ -405,33 +296,11 @@ public class Game {
 			outputFile = new File(args[1]);
 		}
 		
-
 		Game game = new Game();
 		game.initialize(inputFile);
 		
-		// Testing
-//		System.out.println(game.BFS(new Cell(8,0), new Cell(1,11)));		
+		// Testing	
 		long startTime, stopTime;		
-//		System.out.println(game.findShortestPath(new Cell(4, 4), new Cell(4,19)));
-		
-//		
-//		startTime = System.nanoTime();
-//		game.findOptimalPath();
-//		stopTime = System.nanoTime();
-//		System.out.println("Time: " + (stopTime - startTime) / 1000000000.0);
-//		System.out.println();
-//		System.out.println("OPTM SCORE: " + game.maxScore + "\n" + game.optmPath);
-		
-//		ArrayList<ArrayList<Cell>> paths = new ArrayList<ArrayList<Cell>>();
-//		System.out.println(game.generatePath(paths));
-		
-//		startTime = System.nanoTime();
-////		for(int i = 0; i <= 1000000; i++)
-////			game.findShortestPath(new Cell(8,0), new Cell(8,4));
-////		System.out.println(game.findShortestPath(new Cell(8,0), new Cell(1,11)));
-//			
-//		stopTime = System.nanoTime();
-//		System.out.println("BFS Time: " + (stopTime - startTime) / 1000000000.0);
 		
 		// visit the cell at the initial point
 		Cell initialPt = new Cell(game.player.getRow(), game.player.getCol());
@@ -441,7 +310,6 @@ public class Game {
 		stopTime = System.nanoTime();
 		System.out.println("FindPath Time: " + (stopTime - startTime) / 1000000000.0);
 			
-		
 		System.out.println("================= SOLUTION ===================");
 		System.out.println("Total possible path = " + game.playerCount);
 		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
