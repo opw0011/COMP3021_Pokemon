@@ -170,8 +170,7 @@ public class Game {
 			if(! player.hasVisitedCell(current)) {
 				for(Station station : stations) {
 					if(station.getCol() == current.getCol() && station.getRow() == current.getRow()) {
-						int numPB = station.getNumPokeBalls();
-						player.setNumPokeBalls(player.getNumPokeBalls() + numPB);
+						player.setNumPokeBalls(player.getNumPokeBalls() + station.getNumPokeBalls());
 						break;
 					}
 				}	
@@ -202,13 +201,15 @@ public class Game {
 		player.addVistedCell(current);
 		
 		// break the recursion if the state has no improvement
-		if(player.getScore() < player.getStateScore(current)) {
+		int currentScore = player.getScore();
+		Player currentPlayerState = player.getPlayerState();
+		if(currentScore < map.getStateScoreNew(currentPlayerState)) {
 //			System.out.println("Low score >> " + current + player.getScore());
 			return;
 		}
 		
 		// current score improved, update the state
-		player.recordCurrentState(current);
+		map.recordCurrentStateNew(currentPlayerState, currentScore);
 
 		Cell up = new Cell(current.getRow() - 1, current.getCol());
 		Cell right = new Cell(current.getRow(), current.getCol() + 1);
@@ -230,7 +231,7 @@ public class Game {
 			this.optPlayer = new Player(p);
 		}
 		playerCount ++;
-		System.out.println(p);
+//		System.out.println(p);
 	}
 	
 	// must pass in Cell type, subclass not works
@@ -385,7 +386,7 @@ public class Game {
         	
         }
     }
-	
+    
 
 	/**
 	 * Main function to be called first
@@ -442,9 +443,6 @@ public class Game {
 			
 		
 		System.out.println("================= SOLUTION ===================");
-//		Player op = game.playerList.get(game.playerList.size()-1);	// last element is the highest score
-//		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
-//				op.getScore(), op.getNumPokeBalls(), op.getPkmCaught().size(), op.getNumDistinctPokemonType(), op.getMaxPokemonCP(), op);
 		System.out.println("Total possible path = " + game.playerCount);
 		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
 				game.optPlayer.getScore(), game.optPlayer.getNumPokeBalls(), game.optPlayer.getPkmCaught().size(), 

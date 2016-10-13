@@ -14,7 +14,7 @@ public class Player implements Comparable<Player>{
 	private ArrayList<Pokemon> pkmCaught;
 	private ArrayList<Cell> pathVisited;
 	private HashMap<Cell, Integer> optimalCellState;
-	private int score = 0;
+//	private int score = 0;
 	
 	/**
 	 * Constructor
@@ -174,6 +174,51 @@ public class Player implements Comparable<Player>{
 			return optimalCellState.get(c);
 		return Integer.MIN_VALUE;
 	}
+	
+	/**
+	 * Get a pure player state without path visited
+	 * @return
+	 */
+	public Player getPlayerState() {
+		Player p = new Player(this.row, this.col);
+		p.numPokeBalls = this.numPokeBalls;
+		p.pkmCaught = new ArrayList<Pokemon>(this.pkmCaught);
+		return p;
+	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + col;
+		result = prime * result + numPokeBalls;
+		result = prime * result + ((pkmCaught == null) ? 0 : pkmCaught.hashCode());
+		result = prime * result + row;
+		return result;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Player other = (Player) obj;
+		if (col != other.col)
+			return false;
+		if (numPokeBalls != other.numPokeBalls)
+			return false;
+		if (pkmCaught == null) {
+			if (other.pkmCaught != null)
+				return false;
+		} else if (!pkmCaught.equals(other.pkmCaught))
+			return false;
+		if (row != other.row)
+			return false;
+		return true;
+	}
+
+	
 }
