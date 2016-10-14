@@ -214,8 +214,7 @@ public class Game {
 		// break the recursion if the state has no improvement
 		int currentScore = player.getScore();
 		Player currentPlayerState = player.getPlayerState();
-		if(currentScore < map.getPlayerState(currentPlayerState)) {
-//			System.out.println("Low score >> " + current + player.getScore());
+		if(currentScore <= map.getPlayerState(currentPlayerState)) {
 			return;
 		}
 		
@@ -226,7 +225,7 @@ public class Game {
 		Cell right = new Cell(current.getRow(), current.getCol() + 1);
 		Cell down = new Cell(current.getRow() + 1, current.getCol());
 		Cell left = new Cell(current.getRow(), current.getCol() - 1);
-
+		
 		Player player1 = new Player(player);
 		Player player2 = new Player(player);
 		Player player3 = new Player(player);
