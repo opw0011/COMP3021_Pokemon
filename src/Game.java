@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,9 +28,10 @@ public class Game {
 	private Player player;
 	private ArrayList<Station> stations = new ArrayList<Station>();
 	private ArrayList<Pokemon> pokemons = new ArrayList<Pokemon>();
+	private static long timer;
+	private static File outputFile;
 	private Cell startPoint;
-	private Cell destPoint;	
-	
+	private Cell destPoint;		
 	private Player optPlayer;
 	private int playerCount = 0;
 	
@@ -143,8 +145,16 @@ public class Game {
 	 * Recursively find a optimal path with highest score
 	 * @param current initial cell
 	 * @param player initial player
+	 * @throws IOException 
 	 */
-	public void findPath(Cell current, Player player) {
+	public void findPath(Cell current, Player player) throws IOException {
+		// write current optimal solution to text file every 10s
+		long curTime = System.nanoTime();
+		if(curTime - timer > 10 *1000000000.0) {
+			this.writeCurrentSolutionToFile();
+			timer = System.nanoTime();
+		}
+		
 		// return false if out of map boundary
 		if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN())
 			return;
@@ -278,6 +288,24 @@ public class Game {
 		}
 		return 0;	// no path found
 	}
+	
+	public void writeCurrentSolutionToFile() throws IOException {
+		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+		bw.write(String.format("%d", this.optPlayer.getScore()));
+		bw.newLine();
+		bw.write(String.format("%d:%d:%d:%d", 
+				this.optPlayer.getNumPokeBalls(), this.optPlayer.getPkmCaught().size(), this.optPlayer.getNumDistinctPokemonType(), this.optPlayer.getMaxPokemonCP()));
+		bw.newLine();
+		int j = 0;
+		ArrayList<Cell> pathList = this.optPlayer.getPathVisited();
+		for(Cell c : pathList) {
+			bw.write(String.format("<%s,%s>", c.getRow(), c.getCol()));
+			if(j != pathList.size() - 1)	
+				bw.write("->");
+			j++;
+		}
+		bw.close();
+	}
 
 	/**
 	 * Main function to be called first
@@ -298,6 +326,7 @@ public class Game {
 		
 		Game game = new Game();
 		game.initialize(inputFile);
+		Game.outputFile = outputFile;
 		
 		// Testing	
 		long startTime, stopTime;		
@@ -305,6 +334,7 @@ public class Game {
 		// visit the cell at the initial point
 		Cell initialPt = new Cell(game.player.getRow(), game.player.getCol());
 
+		Game.timer = System.nanoTime();
 		startTime = System.nanoTime();
 		game.findPath(initialPt, game.player);	// recursion find path
 		stopTime = System.nanoTime();
@@ -319,22 +349,7 @@ public class Game {
 		// TO DO 
 		// Read the configures of the map and pokemons from the file inputFile
 		// and output the results to the file outputFile
-		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
-		bw.write(String.format("%d", game.optPlayer.getScore()));
-		bw.newLine();
-		bw.write(String.format("%d:%d:%d:%d", 
-				game.optPlayer.getNumPokeBalls(), game.optPlayer.getPkmCaught().size(), game.optPlayer.getNumDistinctPokemonType(), game.optPlayer.getMaxPokemonCP()));
-		bw.newLine();
-		int j = 0;
-		ArrayList<Cell> pathList = game.optPlayer.getPathVisited();
-		for(Cell c : pathList) {
-			bw.write(String.format("<%s,%s>", c.getRow(), c.getCol()));
-			if(j != pathList.size() - 1)	
-				bw.write("->");
-			j++;
-		}
-
-		bw.close();
+		game.writeCurrentSolutionToFile();
 	}
 	
 }
