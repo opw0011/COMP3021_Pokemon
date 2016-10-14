@@ -28,9 +28,9 @@ public class Map implements Cloneable{
 	
 	/**
 	 * Insert the cell type to the map
-	 * @param row
-	 * @param col
-	 * @param type
+	 * @param row row number
+	 * @param col column number
+	 * @param type map type
 	 */
 	public void insertCell(int row, int col, MapType type) {
 		if(row < M && col < N){
@@ -38,6 +38,9 @@ public class Map implements Cloneable{
 		}
 	}
 
+	/**
+	 * Print map with readable symbols
+	 */
 	public void printPrettyMap() {
 		for(int i = 0; i < M; i++) {
 			for(int j = 0; j < N; j++) {
@@ -74,6 +77,9 @@ public class Map implements Cloneable{
 		}
 	}
 
+	/**
+	 * Print map with detailed cell information
+	 */
 	public void printMap() {
 		for(int i = 0; i < M; i++) {
 			for(int j = 0; j < N; j++) {
@@ -84,6 +90,30 @@ public class Map implements Cloneable{
 		}
 	}
 	
+	/**
+	 * Set the cell player state
+	 * @param playerState 
+	 * @param score
+	 */
+	public void setPlayerState(Player playerState, int score) {
+		if(playerState != null)
+			optimalStates.put(playerState, score);
+	}
+	
+	/**
+	 * Get the cell player state
+	 * @param playerState player state
+	 * @return score
+	 */
+	public int getPlayerState(Player playerState) {
+		if(optimalStates.containsKey(playerState))
+			return optimalStates.get(playerState);
+		return Integer.MIN_VALUE;
+	}
+	
+	//--------------------
+	// Getters and Setters
+	//--------------------
 	public MapType getCellType(int row, int col) {
 		return cells[row][col];
 	}
@@ -99,7 +129,10 @@ public class Map implements Cloneable{
 	public int getN() {
 		return N;
 	}
-	
+		
+	/**
+	 * Clone map
+	 */
 	@Override
 	public Map clone() throws CloneNotSupportedException {
 		Map newMap = new Map(M, N);		
@@ -110,21 +143,4 @@ public class Map implements Cloneable{
 		}
 		return newMap;
 	}
-	
-	public void setPlayerState(Player playerState, int score) {
-		if(playerState != null)
-			optimalStates.put(playerState, score);
-	}
-	
-	public int getPlayerState(Player playerState) {
-		if(optimalStates.containsKey(playerState))
-			return optimalStates.get(playerState);
-		return Integer.MIN_VALUE;
-	}
-	
-	
-	
-	
-	
-
 }

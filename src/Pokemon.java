@@ -26,6 +26,9 @@ public class Pokemon extends Cell{
 		this.numRequiredBalls = numRequiredBalls;
 	}
 
+	//--------------------
+	// Getters and Setters
+	//--------------------
 	public String getTypes() {
 		return types;
 	}
@@ -46,6 +49,9 @@ public class Pokemon extends Cell{
 		this.numRequiredBalls = numRequiredBalls;
 	}
 
+	//--------------------------
+	// Auto Generated Functions
+	//--------------------------
 	@Override
 	public String toString() {
 		return "Pokemon [name=" + name + ", types=" + types + ", cp=" + cp + ", numRequiredBalls="
@@ -88,8 +94,4 @@ public class Pokemon extends Cell{
 			return false;
 		return true;
 	}
-	
-	
-	
-
 }

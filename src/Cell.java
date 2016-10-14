@@ -16,7 +16,10 @@ public class Cell {
 		this.row = row;
 		this.col = col;
 	}
-
+	
+	//--------------------
+	// Getters and Setters
+	//--------------------
 	public int getRow() {
 		return row;
 	}
@@ -25,6 +28,9 @@ public class Cell {
 		return col;
 	}
 
+	//--------------------------
+	// Auto Generated Functions
+	//--------------------------
 	@Override
 	public String toString() {
 		return "Cell [row=" + row + ", col=" + col + "]";
@@ -53,7 +59,5 @@ public class Cell {
 		if (row != other.row)
 			return false;
 		return true;
-	}
-	
-	
+	}	
 }
