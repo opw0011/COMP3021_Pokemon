@@ -8,13 +8,13 @@ import java.util.HashMap;
  */
 public class Map implements Cloneable{
 	private MapType[][] cells;
-	private final int M;
-	private final int N;
+	private final int M;	// max row number
+	private final int N;	// max column number
 	public enum MapType {
 		WALL, EMPTY, START, DEST, SUPPLY, POKEMON, VISITED
 	}
-//	private HashMap<Cell, Integer> optimalCellStates = new HashMap<Cell, Integer>();
-	private HashMap<Player, Integer> optimalStates = new HashMap<Player, Integer>();
+//	public HashMap<Player, Integer> optimalStates = new HashMap<Player, Integer>();
+	private HashMap<Integer, Integer> optimalStates = new HashMap<Integer, Integer>();	// Player State Hash -> Score
 	/**
 	 * Constructor
 	 * @param M total rows in the map
@@ -95,21 +95,28 @@ public class Map implements Cloneable{
 	 * @param playerState 
 	 * @param score
 	 */
-	public void setPlayerState(Player playerState, int score) {
-		if(playerState != null)
-			optimalStates.put(playerState, score);
+	/**
+	 * 
+	 * @param playerStateHash player state hash value
+	 * @param score score calculated in that state
+	 */
+	public void setPlayerState(int playerStateHash, int score) {
+		if(optimalStates.containsKey(playerStateHash))
+			optimalStates.remove(playerStateHash);
+		optimalStates.put(playerStateHash, score);		
 	}
 	
 	/**
-	 * Get the cell player state
-	 * @param playerState player state
-	 * @return score
+	 * Get the cell player state hash value
+	 * @param playerStateHash player state
+	 * @return score max score stored in that state
 	 */
-	public int getPlayerState(Player playerState) {
-		if(optimalStates.containsKey(playerState))
-			return optimalStates.get(playerState);
+	public int getPlayerState(int playerStateHash) {
+		if(optimalStates.containsKey(playerStateHash))
+			return optimalStates.get(playerStateHash);
 		return Integer.MIN_VALUE;
 	}
+	
 	
 	//--------------------
 	// Getters and Setters

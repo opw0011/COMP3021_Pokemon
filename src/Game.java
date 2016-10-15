@@ -94,13 +94,12 @@ public class Game {
 			}
 		}
 		
-		map.printPrettyMap();	
+//		map.printPrettyMap();	
 		
 		// to do
 		// Find the number of stations and pokemons in the map 
 		// Continue read the information of all the stations and pokemons by using br.readLine();
 		while((line = br.readLine()) != null) {
-//			System.out.println(line);
 			
 			// setting up REGEX for data parsing
 			String pkmREGEX = "<(\\d+),(\\d+)>,\\s?(\\w+)\\s?,\\s?(\\w+)\\s?,\\s?(\\d+)\\s?,\\s?(\\d+)\\s?";
@@ -151,13 +150,16 @@ public class Game {
 		// write current optimal solution to text file every 10s
 		long curTime = System.nanoTime();
 		if(curTime - timer > 10 *1000000000.0) {
+			System.out.printf("Writing current optimal solution to text file [SCORE = %d] (Updates every 10s)\n" , this.optPlayer.getScore());
 			this.writeCurrentSolutionToFile();
 			timer = System.nanoTime();
+//			System.out.println(map.optimalStates.size());
 		}
 		
 		// return false if out of map boundary
-		if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN())
+		if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN()) {
 			return;
+		}
 		
 		// check current cell type
 		Map.MapType curCell = map.getCellType(current);
@@ -170,7 +172,6 @@ public class Game {
 		case DEST:
 //			System.out.println("REACH DEST");
 			player.addVistedCell(current);
-//			playerList.add(new Player(player));
 			this.setOptimalPlayer(player);
 //			System.out.println(player);
 			return;
@@ -214,80 +215,34 @@ public class Game {
 		// break the recursion if the state has no improvement
 		int currentScore = player.getScore();
 		Player currentPlayerState = player.getPlayerState();
-		if(currentScore <= map.getPlayerState(currentPlayerState)) {
+		if(currentScore <= map.getPlayerState(currentPlayerState.hashCode())) {
 			return;
 		}
 		
 		// current score improved, update the state
-		map.setPlayerState(currentPlayerState, currentScore);
+		map.setPlayerState(currentPlayerState.hashCode(), currentScore);
 
-		Cell up = new Cell(current.getRow() - 1, current.getCol());
-		Cell right = new Cell(current.getRow(), current.getCol() + 1);
-		Cell down = new Cell(current.getRow() + 1, current.getCol());
-		Cell left = new Cell(current.getRow(), current.getCol() - 1);
-		
-		Player player1 = new Player(player);
-		Player player2 = new Player(player);
-		Player player3 = new Player(player);
-		Player player4 = new Player(player);
-		findPath(up, player1);
-		findPath(right, player2);
-		findPath(down, player3);
-		findPath(left, player4);		
+		findPath(new Cell(current.getRow() - 1, current.getCol()), new Player(player));	// up
+		findPath(new Cell(current.getRow(), current.getCol() + 1), new Player(player));	// right
+		findPath(new Cell(current.getRow() + 1, current.getCol()), new Player(player));	// down
+		findPath(new Cell(current.getRow(), current.getCol() - 1), new Player(player));	// left
 	}
 	
+	/**
+	 * Record the player when a better solution is found
+	 * @param p player
+	 */
 	private void setOptimalPlayer(Player p) {
 		if(this.optPlayer == null || p.getScore() > this.optPlayer.getScore()) {
 			this.optPlayer = new Player(p);
 		}
 		playerCount ++;
-//		System.out.println(p);
 	}
 	
-	// must pass in Cell type, subclass not works
-	private int findShortestPath(Cell start, Cell dest) {		
-		// BFS
-		Queue<Cell> queue = new LinkedList<Cell>();
-		HashMap<Cell, Integer> distanceMap= new HashMap<Cell, Integer>();
-		HashSet<Cell> visitedList = new HashSet<Cell>();
-		queue.add(start);
-		distanceMap.put(start, 0);
-		while(! queue.isEmpty()) {
-			Cell current = queue.poll();
-			visitedList.add(current);
-
-			// out of boundaries
-			if(current.getRow() < 0 || current.getCol() < 0 || current.getRow() >= map.getM() || current.getCol() >= map.getN()) continue;
-			// wall
-			Map.MapType curCell = map.getCellType(current);
-			if(current.equals(dest)) break;
-			if(curCell == Map.MapType.WALL) continue;
-			if(curCell == Map.MapType.DEST)	continue;	// DEST act like a wall
-			
-			
-			ArrayList<Cell> cellList = new ArrayList<Cell>();
-			cellList.add(new Cell(current.getRow() - 1, current.getCol()));	// up
-			cellList.add(new Cell(current.getRow(), current.getCol() + 1));	// right
-			cellList.add(new Cell(current.getRow() + 1, current.getCol()));	// down
-			cellList.add(new Cell(current.getRow(), current.getCol() - 1));	// left			
-			
-			int newDistance = distanceMap.get(current) + 1;
-			// visit 4 directions
-			for(Cell cell : cellList) {
-				if(!visitedList.contains(cell)) {
-					queue.add(cell);
-					if(!distanceMap.containsKey(cell) || newDistance < distanceMap.get(current))
-						distanceMap.put(cell, newDistance);
-				}
-			}
-		}
-		
-		if(distanceMap.containsKey(dest)) {
-			return distanceMap.get(dest);
-		}
-		return 0;	// no path found
-	}
-	
+	/**
+	 * Write the current optimal solution to the output text file
+	 * @throws IOException output file not found
+	 */
 	public void writeCurrentSolutionToFile() throws IOException {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
 		bw.write(String.format("%d", this.optPlayer.getScore()));
@@ -328,8 +283,9 @@ public class Game {
 		Game.outputFile = outputFile;
 		
 		// Testing	
-		long startTime, stopTime;		
+		long startTime, stopTime;
 		
+		System.out.println("Finding optimal path ... Please be patient");
 		// visit the cell at the initial point
 		Cell initialPt = new Cell(game.player.getRow(), game.player.getCol());
 
@@ -341,7 +297,7 @@ public class Game {
 			
 		System.out.println("================= SOLUTION ===================");
 		System.out.println("Total possible path = " + game.playerCount);
-		System.out.printf("Optimal[score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
+		System.out.printf("Optimal Solution = [score:%s NB:%s NP:%s NS:%s MCP:%s %s]\n", 
 				game.optPlayer.getScore(), game.optPlayer.getNumPokeBalls(), game.optPlayer.getPkmCaught().size(), 
 				game.optPlayer.getNumDistinctPokemonType(), game.optPlayer.getMaxPokemonCP(), game.optPlayer);		
 		

@@ -26,6 +26,10 @@ public class Player implements Comparable<Player>{
 		pathVisited = new ArrayList<Cell>();	
 	}
 	
+	/**
+	 * Copy constructor
+	 * @param player player to be copied
+	 */
 	public Player(Player player) {
 		this.row = player.row;
 		this.col = player.col;
@@ -33,6 +37,10 @@ public class Player implements Comparable<Player>{
 		this.pkmCaught = new ArrayList<Pokemon>(player.pkmCaught);
 		this.pathVisited = new ArrayList<Cell>(player.pathVisited);
 	}
+	
+	//--------------------
+	// Getters and Setters
+	//--------------------
 
 	public int getRow() {
 		return row;
@@ -58,47 +66,6 @@ public class Player implements Comparable<Player>{
 		this.numPokeBalls = numPokeBalls;
 	}
 	
-	public ArrayList<Pokemon> getPkmCaught() {
-		return pkmCaught;
-	}
-
-	public ArrayList<Cell> getPathVisited() {
-		return pathVisited;
-	}
-
-	@Override
-	public String toString() {
-		return "Player [row=" + row + ", col=" + col + ", numPokeBalls=" + numPokeBalls + ", pkmCaught=" + pkmCaught
-				+ ", pathVisited=" + pathVisited + "]";
-	}
-	
-	
-	public void addVistedCell(Cell cell) {
-		if(cell != null)
-			pathVisited.add(cell);
-	}
-	
-	public void addCaughtPokemon(Pokemon pkm) {
-		if(pkm != null)
-			pkmCaught.add(pkm);
-	}
-	
-	public void removeLastVisitedCell(Cell cell) {
-		pathVisited.remove(pathVisited.lastIndexOf(cell));
-	}
-	
-	public boolean hasVisitedCell(Cell cell) {
-		return pathVisited.contains(cell);
-	}
-	
-	public boolean hasCaughtPokemon(Pokemon pkm) {
-		return pkmCaught.contains(pkm);
-	}
-	
-	public void printVistedPath() {
-		System.out.println(pathVisited);
-	}
-	
 	public int getNumDistinctPokemonType() {
 		HashSet<String> uniquePkm = new HashSet<String>();
 		for(Pokemon p : this.pkmCaught) {
@@ -118,6 +85,58 @@ public class Player implements Comparable<Player>{
 		return maxCP;
 	}
 	
+	public ArrayList<Pokemon> getPkmCaught() {
+		return pkmCaught;
+	}
+
+	public ArrayList<Cell> getPathVisited() {
+		return pathVisited;
+	}	
+	
+	/**
+	 * Insert cell to pathVisited
+	 * @param cell map cell
+	 */
+	public void addVistedCell(Cell cell) {
+		if(cell != null)
+			pathVisited.add(cell);
+	}
+	
+	/**
+	 * Insert pokemon to caught list
+	 * @param pkm pokemon
+	 */
+	public void addCaughtPokemon(Pokemon pkm) {
+		if(pkm != null)
+			pkmCaught.add(pkm);
+	}
+	
+	/**
+	 * Remove the most recent cell visited
+	 * @param cell cell to be removed
+	 */
+	public void removeLastVisitedCell(Cell cell) {
+		pathVisited.remove(pathVisited.lastIndexOf(cell));
+	}
+	
+	/**
+	 * Check if player visited that cell before
+	 * @param cell current cell visiting
+	 * @return true if visited, false otherwise
+	 */
+	public boolean hasVisitedCell(Cell cell) {
+		return pathVisited.contains(cell);
+	}
+	
+	/**
+	 * Check if player caught that pokemon before
+	 * @param pkm pokemon
+	 * @return true if caught, false otherwise
+	 */
+	public boolean hasCaughtPokemon(Pokemon pkm) {
+		return pkmCaught.contains(pkm);
+	}
+	
 	/**
 	 * Return score of a player
 	 * scoring function = < NB + 5 * NP + 10 * NS + MCP - Steps>
@@ -133,20 +152,6 @@ public class Player implements Comparable<Player>{
 		return score;
 	}
 
-	@Override
-	public int compareTo(Player o) {
-//		if(this.getNumPokeBalls() > o.getNumPokeBalls() || this.pkmCaught.size() > o.pkmCaught.size()) {
-//			return 1;
-//		}
-		if(this.getScore() == o.getScore()){
-			return 0;
-		}	
-		else if(this.getScore() > o.getScore()) {
-			return 1;
-		}
-		return -1;
-	}
-	
 	/**
 	 * Get a pure player state without path visited
 	 * @return
@@ -156,6 +161,26 @@ public class Player implements Comparable<Player>{
 		p.numPokeBalls = this.numPokeBalls;
 		p.pkmCaught = new ArrayList<Pokemon>(this.pkmCaught);
 		return p;
+	}
+	
+	//--------------------------
+	// Auto Generated Functions
+	//--------------------------
+	@Override
+	public int compareTo(Player o) {
+		if(this.getScore() == o.getScore()){
+			return 0;
+		}	
+		else if(this.getScore() > o.getScore()) {
+			return 1;
+		}
+		return -1;
+	}
+	
+	@Override
+	public String toString() {
+		return "Player [row=" + row + ", col=" + col + ", numPokeBalls=" + numPokeBalls + ", pkmCaught=" + pkmCaught
+				+ ", pathVisited=" + pathVisited + "]";
 	}
 
 	@Override
