@@ -34,6 +34,10 @@ public class Pokemon extends Cell{
 		return types;
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	public int getCp() {
 		return cp;
 	}

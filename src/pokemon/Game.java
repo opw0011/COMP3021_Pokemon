@@ -261,7 +261,32 @@ public class Game {
 		}
 		bw.close();
 	}
+	
+	public Map getMap() {
+		return map;
+	}
 
+	public Player getPlayer() {
+		return player;
+	}
+	
+	public ArrayList<Station> getStations() {
+		return stations;
+	}
+
+	public ArrayList<Pokemon> getPokemons() {
+		return pokemons;
+	}
+
+	public Pokemon getPokemon(int row, int col) {
+		// TODO: loop through the list and return matched pokemon
+		for(Pokemon pkm : pokemons) {
+			if(pkm.getRow() == row && pkm.getCol() == col) {
+				return pkm;
+			}
+		}
+		return null;
+	}
 	/**
 	 * Main function to be called first
 	 * @param args
