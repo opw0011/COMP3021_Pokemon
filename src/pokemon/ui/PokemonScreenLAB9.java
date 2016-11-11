@@ -6,9 +6,11 @@ import java.util.Random;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.*;
 import javafx.scene.input.KeyEvent;
@@ -68,10 +70,15 @@ public class PokemonScreenLAB9 extends Application {
 	double currentPosy = 0;
 
 	protected boolean stop = false;
+	private boolean pause = false;
 	
+	// bind variables
 	private SimpleIntegerProperty score = new SimpleIntegerProperty(0); 
 	private SimpleIntegerProperty numCaught = new SimpleIntegerProperty(0); 
 	private SimpleIntegerProperty numBalls = new SimpleIntegerProperty(0); 
+	private SimpleStringProperty statusMsg = new SimpleStringProperty();
+	
+	private AnimationTimer timer;
 	
 
 	@Override
@@ -92,17 +99,45 @@ public class PokemonScreenLAB9 extends Application {
 		
 		Label lableScore = new Label();
 		lableScore.textProperty().bind(score.asString());		
-		rPanel.getChildren().add(new HBox(new Label("Current score:"), lableScore));
+		rPanel.getChildren().add(new HBox(new Label("Current score: "), lableScore));
 		
 		Label labelCaught = new Label();
 		labelCaught.textProperty().bind(numCaught.asString());	
-		rPanel.getChildren().add(new HBox(new Label("# of Pokemons caught:"), labelCaught));
+		rPanel.getChildren().add(new HBox(new Label("# of Pokemons caught: "), labelCaught));
 		
 		Label labelBalls = new Label();
 		labelBalls.textProperty().bind(numBalls.asString());	
-		rPanel.getChildren().add(new HBox(new Label("# of Pokeballs owned:"),labelBalls));
-
-		hbox.getChildren().add(rPanel);
+		rPanel.getChildren().add(new HBox(new Label("# of Pokeballs owned: "),labelBalls));
+		
+		Label labelStatus = new Label();
+		labelStatus.textProperty().bind(statusMsg);
+		rPanel.getChildren().add(labelStatus);
+				
+		// buttons
+		Button btnResume = new Button("Resume");
+		btnResume.setFocusTraversable(false);
+		btnResume.setOnAction(e -> {
+			System.out.println("Resume");
+			statusMsg.set("");
+			pause = false;
+			timer.start();
+		});
+		
+		Button btnPause = new Button("Pause");
+		btnPause.setFocusTraversable(false);
+		btnPause.setOnAction(e -> {
+			System.out.println("Pause");
+			statusMsg.set("Game paused!");
+			pause = true;
+			timer.stop();
+		});
+		
+		HBox btnPanel = new HBox(10);
+		btnPanel.setPadding(new Insets(50, 0,0,0));
+		btnPanel.getChildren().addAll(btnResume, btnPause);
+		rPanel.getChildren().add(btnPanel);
+		
+		hbox.getChildren().add(rPanel);		
 
 		// create scene
 		Scene scene = new Scene(hbox);
@@ -111,6 +146,7 @@ public class PokemonScreenLAB9 extends Application {
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
+				if(pause)	return;	// ignore key press when the pause btn is clicked
 				switch (event.getCode()) {
 				case UP:
 					goUp = true;
@@ -162,7 +198,7 @@ public class PokemonScreenLAB9 extends Application {
 		stage.show();
 
 		// it will execute this periodically
-		AnimationTimer timer = new AnimationTimer() {
+		timer = new AnimationTimer() {
 			@Override
 			public void handle(long now) {
 				if (stop)
