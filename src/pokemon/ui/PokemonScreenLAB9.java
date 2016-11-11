@@ -17,6 +17,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import pokemon.Cell;
@@ -76,10 +77,12 @@ public class PokemonScreenLAB9 extends Application {
 	private SimpleIntegerProperty score = new SimpleIntegerProperty(0); 
 	private SimpleIntegerProperty numCaught = new SimpleIntegerProperty(0); 
 	private SimpleIntegerProperty numBalls = new SimpleIntegerProperty(0); 
-	private SimpleStringProperty statusMsg = new SimpleStringProperty();
+//	private SimpleStringProperty statusMsg = new SimpleStringProperty();
 	
 	private AnimationTimer timer;
 	Group mapGroup;
+	
+	Label labelStatus;
 	
 
 	@Override
@@ -110,8 +113,8 @@ public class PokemonScreenLAB9 extends Application {
 		labelBalls.textProperty().bind(numBalls.asString());	
 		rPanel.getChildren().add(new HBox(new Label("# of Pokeballs owned: "),labelBalls));
 		
-		Label labelStatus = new Label();
-		labelStatus.textProperty().bind(statusMsg);
+		labelStatus = new Label();
+//		labelStatus.textProperty().bind(statusMsg);
 		rPanel.getChildren().add(labelStatus);
 				
 		// buttons
@@ -119,7 +122,7 @@ public class PokemonScreenLAB9 extends Application {
 		btnResume.setFocusTraversable(false);
 		btnResume.setOnAction(e -> {
 			System.out.println("Resume");
-			statusMsg.set("");
+			labelStatus.setText("");
 			pause = false;
 			timer.start();
 		});
@@ -128,7 +131,7 @@ public class PokemonScreenLAB9 extends Application {
 		btnPause.setFocusTraversable(false);
 		btnPause.setOnAction(e -> {
 			System.out.println("Pause");
-			statusMsg.set("Game paused!");
+			labelStatus.setText("Game Pause!");
 			pause = true;
 			timer.stop();
 		});
@@ -247,11 +250,55 @@ public class PokemonScreenLAB9 extends Application {
 						myGame.getStations().remove(station);
 						
 						// get the station image and set it non-visible
-						ImageView img = (ImageView) mapGroup.lookup("#S" + row + col);	
-						img.setVisible(false);						
+						ImageView simg = (ImageView) mapGroup.lookup("#S" + row + col);	
+						simg.setVisible(false);			
+						
+						// TODO: trigger function that spawn station after 5 to 10s
 						break;
 						
+					case POKEMON:
+						Pokemon pkm = myGame.getPokemon(current);
+						
+						int pkBallsLeft = myGame.getPlayer().getNumPokeBalls() - pkm.getNumRequiredBalls();
+						
+						// get the pkm image and set it non-visible
+						ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
+						pkmimg.setVisible(false);
+						
+						// update game map (remove that pkm)
+						myGame.getMap().insertCell(row, col, MapType.EMPTY);
+						myGame.getPokemons().remove(pkm);
+						
+						// if have enough balls to catch pkm
+						if(pkBallsLeft >= 0) {
+							// caught pkm
+							myGame.getPlayer().addCaughtPokemon(pkm);
+														
+							// update # balls
+							myGame.getPlayer().setNumPokeBalls(pkBallsLeft);
+							numBalls.set(pkBallsLeft);
+							
+							// update # pkm caught
+							numCaught.set(myGame.getPlayer().getPkmCaught().size());
+							
+							// update message
+							labelStatus.setText("Pokemon Caught!");
+							labelStatus.setTextFill(Color.GREEN);
+							
+							// TODO: trigger function to respawn that pkm
+						}
+						else {
+							// not enough balls to catch that pkm
+							labelStatus.setText("NOT enough pokemon ball!");
+							labelStatus.setTextFill(Color.RED);
+									
+							// TODO: respawn the pkm							
+						}
+						
+						break;
 					default:
+						// reset text label
+						labelStatus.setText("");
 						break;
 					}
 					
@@ -351,6 +398,7 @@ public class PokemonScreenLAB9 extends Application {
 					int id = PokemonList.getIdOfFromName(pkm.getName());;
 					String path = new File("icons/" + id + ".png").toURI().toString();
 					img = new ImageView(path);
+					img.setId("P" + i + j); // id: "P[row][col]"
 					break;
 					
 				case SUPPLY:
