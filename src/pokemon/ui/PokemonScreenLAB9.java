@@ -79,6 +79,7 @@ public class PokemonScreenLAB9 extends Application {
 	private SimpleStringProperty statusMsg = new SimpleStringProperty();
 	
 	private AnimationTimer timer;
+	Group mapGroup;
 	
 
 	@Override
@@ -88,7 +89,7 @@ public class PokemonScreenLAB9 extends Application {
 		hbox.setPadding(new Insets(10));
 		
 		// Setup Map and add to myGroup
-		Group mapGroup = new Group();
+		mapGroup = new Group();
 		buildMap(mapGroup);
 		
 		hbox.getChildren().add(mapGroup);
@@ -227,15 +228,41 @@ public class PokemonScreenLAB9 extends Application {
 					return;
 				}
 				
-				// TODO: check if the row and col is movealbe
+				// check if the row and col is movealbe
 				if(myGame.getMap().canWalk(row, col)) {
+					Cell current = new Cell(row, col);
+					
+					switch(myGame.getMap().getCellType(current)) {
+					case SUPPLY:
+						Station station = myGame.getStation(current);
+						
+						// update pokeballs
+						int pkBalls =  myGame.getPlayer().getNumPokeBalls() + station.getNumPokeBalls();
+						myGame.getPlayer().setNumPokeBalls(pkBalls);
+						// update # balls label
+						numBalls.set(pkBalls);
+						
+						// update game map 
+						myGame.getMap().insertCell(row, col, MapType.EMPTY);
+						myGame.getStations().remove(station);
+						
+						// get the station image and set it non-visible
+						ImageView img = (ImageView) mapGroup.lookup("#S" + row + col);	
+						img.setVisible(false);						
+						break;
+						
+					default:
+						break;
+					}
+					
+					
 					// move image of avatar
 					moveAvatarBy(dx, dy);
 					
 					// update player position
 					player.setRow(row);
 					player.setCol(col);
-					player.addVistedCell(new Cell(row, col));
+					player.addVistedCell(current);
 					// update score label
 					score.setValue(myGame.getPlayer().getScore());
 				}
@@ -320,7 +347,7 @@ public class PokemonScreenLAB9 extends Application {
 				
 				case POKEMON:
 					// get pokemon id
-					Pokemon pkm = myGame.getPokemon(i, j);
+					Pokemon pkm = myGame.getPokemon(new Cell(i, j));
 					int id = PokemonList.getIdOfFromName(pkm.getName());;
 					String path = new File("icons/" + id + ".png").toURI().toString();
 					img = new ImageView(path);
@@ -328,6 +355,7 @@ public class PokemonScreenLAB9 extends Application {
 					
 				case SUPPLY:
 					img = new ImageView(ball);
+					img.setId("S" + i + j);	// id: "S[row][col]"
 					break;
 					
 				default:

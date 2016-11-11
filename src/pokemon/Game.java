@@ -278,15 +278,25 @@ public class Game {
 		return pokemons;
 	}
 
-	public Pokemon getPokemon(int row, int col) {
+	public Pokemon getPokemon(Cell c) {
 		// TODO: loop through the list and return matched pokemon
 		for(Pokemon pkm : pokemons) {
-			if(pkm.getRow() == row && pkm.getCol() == col) {
+			if(pkm.getCol() == c.getCol() && pkm.getRow() == c.getRow()) {
 				return pkm;
 			}
 		}
 		return null;
 	}
+	
+	public Station getStation(Cell c) {
+		for(Station s : stations) {
+			if(s.getCol() == c.getCol() && s.getRow() == c.getRow()) {
+				return s;
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Main function to be called first
 	 * @param args
