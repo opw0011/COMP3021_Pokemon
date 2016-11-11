@@ -80,7 +80,10 @@ public class PokemonScreenLAB9 extends Application {
 //	private SimpleStringProperty statusMsg = new SimpleStringProperty();
 	
 	private AnimationTimer timer;
+	
+	// Layout panels
 	Group mapGroup;
+	VBox rPanel;
 	
 	Label labelStatus;
 	
@@ -99,7 +102,7 @@ public class PokemonScreenLAB9 extends Application {
 
 		
 		// right-sided menu
-		VBox rPanel = new VBox(10);
+		rPanel = new VBox(10);
 		
 		Label lableScore = new Label();
 		lableScore.textProperty().bind(score.asString());		
@@ -119,6 +122,7 @@ public class PokemonScreenLAB9 extends Application {
 				
 		// buttons
 		Button btnResume = new Button("Resume");
+		btnResume.setId("btnResume");
 		btnResume.setFocusTraversable(false);
 		btnResume.setOnAction(e -> {
 			System.out.println("Resume");
@@ -128,6 +132,7 @@ public class PokemonScreenLAB9 extends Application {
 		});
 		
 		Button btnPause = new Button("Pause");
+		btnPause.setId("btnPause");
 		btnPause.setFocusTraversable(false);
 		btnPause.setOnAction(e -> {
 			System.out.println("Pause");
@@ -295,6 +300,16 @@ public class PokemonScreenLAB9 extends Application {
 							// TODO: respawn the pkm							
 						}
 						
+						break;
+						
+					case DEST:
+						// pause the game and set btn disable
+						pause = true;
+						timer.stop();
+						((Button) rPanel.lookup("#btnResume")).setVisible(false);
+						((Button) rPanel.lookup("#btnPause")).setVisible(false);	
+						labelStatus.setText("End Game");
+						labelStatus.setTextFill(Color.GREEN);
 						break;
 					default:
 						// reset text label
