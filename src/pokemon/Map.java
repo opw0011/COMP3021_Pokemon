@@ -118,6 +118,17 @@ public class Map implements Cloneable{
 		return Integer.MIN_VALUE;
 	}
 	
+	public boolean canWalk(int row, int col) {
+		// out of boundary
+		if(row < 0 || row >= M || col < 0 || col >= N)	
+			return false;
+		// cannot pass through wall
+		if(getCellType(row, col) == MapType.WALL)	
+			return false;
+		
+		return true;		
+	}
+	
 	
 	//--------------------
 	// Getters and Setters

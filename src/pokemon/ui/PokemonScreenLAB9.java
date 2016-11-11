@@ -5,17 +5,24 @@ import java.util.Random;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.*;
+import javafx.scene.control.Label;
 import javafx.scene.image.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import pokemon.Cell;
 import pokemon.Game;
 //import pokemon.Empty;
 import pokemon.Map;
 import pokemon.Map.MapType;
+import pokemon.Player;
 import pokemon.Pokemon;
 import pokemon.Station;
 //import pokemon.Wall;
@@ -25,16 +32,16 @@ public class PokemonScreenLAB9 extends Application {
 	/**
 	 * width of the window
 	 */
-	private static int W = 1000;
+	private static int W;
 
 	/**
 	 * height of the window
 	 */
-	private static int H = 400;
+	private static int H;
 
 
 	// this define the size of one CELL
-	private static int STEP_SIZE = 40;
+	private static final int STEP_SIZE = 40;
 	
 	private static Game myGame;
 	
@@ -43,18 +50,15 @@ public class PokemonScreenLAB9 extends Application {
 	private static final String back = new File("icons/back.png").toURI().toString();
 	private static final String left = new File("icons/left.png").toURI().toString();
 	private static final String right = new File("icons/right.png").toURI().toString();
-	// pika image is in icons/25.png
-	private static final String pikachu = new File("icons/pikachu.gif").toURI().toString();
 	
 	// other game assets
 	private static final String tree = new File("icons/tree.png").toURI().toString();
 	private static final String exit = new File("icons/exit.png").toURI().toString();
 	private static final String ball = new File("icons/ball_ani.gif").toURI().toString();
 	
-	
+	// avatar images
 	private ImageView avatar;
 	private Image avatarImage;
-	private ImageView pkcAvatar;
 
 	// these booleans correspond to the key pressed by the user
 	boolean goUp, goDown, goRight, goLeft;
@@ -64,44 +68,49 @@ public class PokemonScreenLAB9 extends Application {
 	double currentPosy = 0;
 
 	protected boolean stop = false;
+	
+	private SimpleIntegerProperty score = new SimpleIntegerProperty(0); 
+	private SimpleIntegerProperty numCaught = new SimpleIntegerProperty(0); 
+	private SimpleIntegerProperty numBalls = new SimpleIntegerProperty(0); 
+	
 
 	@Override
 	public void start(Stage stage) throws Exception {
-
-		// at the beginning lets set the image of the avatar front
-//		avatarImage = new Image(front);
-//		avatar = new ImageView(avatarImage);
-//		avatar.setFitHeight(STEP_SIZE);
-//		avatar.setFitWidth(STEP_SIZE);
-//		avatar.setPreserveRatio(true);
-//		
-//		// pikachu image
-//		pkcAvatar = new ImageView(new Image(pikachu));
-//		pkcAvatar.setFitHeight(STEP_SIZE);
-//		pkcAvatar.setFitWidth(STEP_SIZE);
-//		pkcAvatar.setPreserveRatio(true);
-//		pkcAvatar.setVisible(false);	// not visible by default
 		
-//		currentPosx = new Random().nextInt(W/STEP_SIZE) * STEP_SIZE; // this should be a random position
-//		currentPosy = new Random().nextInt(H/STEP_SIZE) * STEP_SIZE; // this should be a random position
-//		System.out.println(String.format("x:%s, y:%s", currentPosx, currentPosy));
-
+		HBox hbox = new HBox(20);
+		hbox.setPadding(new Insets(10));
+		
+		// Setup Map and add to myGroup
 		Group mapGroup = new Group();
-//		avatar.relocate(currentPosx, currentPosy);
-//		mapGroup.getChildren().add(avatar);
-//		mapGroup.getChildren().add(pkcAvatar);
-		
-		// TODO: Setup Map here and add to myGroup
 		buildMap(mapGroup);
+		
+		hbox.getChildren().add(mapGroup);
 
-		// create scene with W and H
-		Scene scene = new Scene(mapGroup, W, H);
+		
+		// right-sided menu
+		VBox rPanel = new VBox(10);
+		
+		Label lableScore = new Label();
+		lableScore.textProperty().bind(score.asString());		
+		rPanel.getChildren().add(new HBox(new Label("Current score:"), lableScore));
+		
+		Label labelCaught = new Label();
+		labelCaught.textProperty().bind(numCaught.asString());	
+		rPanel.getChildren().add(new HBox(new Label("# of Pokemons caught:"), labelCaught));
+		
+		Label labelBalls = new Label();
+		labelBalls.textProperty().bind(numBalls.asString());	
+		rPanel.getChildren().add(new HBox(new Label("# of Pokeballs owned:"),labelBalls));
+
+		hbox.getChildren().add(rPanel);
+
+		// create scene
+		Scene scene = new Scene(hbox);
 
 		// add listener on key pressing
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
-//				boolean clicked = true;
 				switch (event.getCode()) {
 				case UP:
 					goUp = true;
@@ -120,11 +129,8 @@ public class PokemonScreenLAB9 extends Application {
 					avatar.setImage(new Image(right));
 					break;
 				default:
-//					clicked = false;
 					break;
 				}
-//				if(clicked)
-//					pkcAvatar.setVisible(true);	// set to visible when first key is pressed
 			}
 		});
 
@@ -163,20 +169,41 @@ public class PokemonScreenLAB9 extends Application {
 					return;
 
 				int dx = 0, dy = 0;
+				
+				Player player = myGame.getPlayer();
+				int row = player.getRow();
+				int col = player.getCol();
 
 				if (goUp) {
 					dy -= (STEP_SIZE);
+					row--;
 				} else if (goDown) {
 					dy += (STEP_SIZE);
+					row++;
 				} else if (goRight) {
 					dx += (STEP_SIZE);
+					col++;
 				} else if (goLeft) {
 					dx -= (STEP_SIZE);
+					col--;
 				} else {
 					// no key was pressed return
 					return;
 				}
-				moveAvatarBy(dx, dy);
+				
+				// TODO: check if the row and col is movealbe
+				if(myGame.getMap().canWalk(row, col)) {
+					// move image of avatar
+					moveAvatarBy(dx, dy);
+					
+					// update player position
+					player.setRow(row);
+					player.setCol(col);
+					player.addVistedCell(new Cell(row, col));
+					// update score label
+					score.setValue(myGame.getPlayer().getScore());
+				}
+
 			}
 		};
 		// start the timer
@@ -195,10 +222,7 @@ public class PokemonScreenLAB9 extends Application {
 		final double cx = avatar.getBoundsInLocal().getWidth() / 2;
 		final double cy = avatar.getBoundsInLocal().getHeight() / 2;
 
-		if (x - cx >= 0 && x + cx <= W && y - cy >= 0 && y + cy <= H) {
-			// relocate Pikachu to previous position of avatar
-//			pkcAvatar.relocate(currentPosx, currentPosy);
-			
+		if (x - cx >= 0 && x + cx <= W && y - cy >= 0 && y + cy <= H) {		
             // relocate ImageView avatar
 			avatar.relocate(x - cx, y - cy);
 			
@@ -229,6 +253,11 @@ public class PokemonScreenLAB9 extends Application {
 		Map myMap = myGame.getMap();
 //		myMap.printMap();
 		
+		// Initial the map width and height
+		W = STEP_SIZE * myMap.getN();
+		H = STEP_SIZE * myMap.getM();
+		
+		
 		// Build map element according to map type
 		for(int i = 0; i < myMap.getM(); i++) {
 			for(int j = 0; j < myMap.getN(); j++) {	
@@ -249,6 +278,8 @@ public class PokemonScreenLAB9 extends Application {
 					currentPosx = i;
 					currentPosy = j;
 					img = avatar;
+					// add player first visited cell
+					myGame.getPlayer().addVistedCell(new Cell(i, j));
 					break;
 				
 				case POKEMON:
@@ -257,6 +288,10 @@ public class PokemonScreenLAB9 extends Application {
 					int id = PokemonList.getIdOfFromName(pkm.getName());;
 					String path = new File("icons/" + id + ".png").toURI().toString();
 					img = new ImageView(path);
+					break;
+					
+				case SUPPLY:
+					img = new ImageView(ball);
 					break;
 					
 				default:
@@ -278,6 +313,5 @@ public class PokemonScreenLAB9 extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
-
 
 }
