@@ -1,4 +1,5 @@
 package pokemon;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -127,6 +128,19 @@ public class Map implements Cloneable{
 			return false;
 		
 		return true;		
+	}
+	
+	// get available cells
+	public ArrayList<Cell> getEmptyCells() {
+		ArrayList<Cell> list = new ArrayList<Cell>();
+		for(int i = 0; i < M; i++) {
+			for(int j = 0; j < N; j++) {
+				if(cells[i][j] == MapType.EMPTY) {
+					list.add(new Cell(i, j));					
+				}
+			}
+		}
+		return list;
 	}
 	
 	
