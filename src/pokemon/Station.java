@@ -1,11 +1,19 @@
 package pokemon;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+import pokemon.ui.PokemonScreenLAB9;
+
 /**
  * Class for storing Pokeshop (Station)
  * @author opw
  *
  */
-public class Station extends Cell{
+public class Station extends Cell implements Runnable{
 	private int numPokeBalls;
+	private static final int MIN_RAND_SPAWN_TIME = 5 * 1000;
+	private static final int MAX_RAND_SPAWN_TIME = 10 * 1000;
 
 	/**
 	 * Constructor
@@ -17,6 +25,7 @@ public class Station extends Cell{
 		super(row, col);
 		this.numPokeBalls = numPokeBalls;
 	}
+	
 
 	//--------------------
 	// Getters and Setters
@@ -30,7 +39,7 @@ public class Station extends Cell{
 	//--------------------------
 	@Override
 	public String toString() {
-		return "Station [numPokeBalls=" + numPokeBalls + "]";
+		return "Station [" + super.toString() +" numPokeBalls=" + numPokeBalls + "]";
 	}
 
 	@Override
@@ -53,6 +62,33 @@ public class Station extends Cell{
 		if (numPokeBalls != other.numPokeBalls)
 			return false;
 		return true;
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		try {
+			System.out.println("Trigger Station Thread");
+			
+			Cell oldCell = new Cell(this.getRow(), this.getCol());
+
+			// Random sleep between 5 to 10 s
+			Random rand = new Random();
+			int delay = rand.nextInt(MAX_RAND_SPAWN_TIME - MIN_RAND_SPAWN_TIME) +  MIN_RAND_SPAWN_TIME;
+			Thread.sleep(delay);
+			
+			// find available cell
+			Cell newCell = PokemonScreenLAB9.getRandomEmptyCell();
+			setRow(newCell.getRow());
+			setCol(newCell.getCol());
+			
+			// invoke UI thread to update station img
+			PokemonScreenLAB9.spawnStation(this, oldCell);			
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 }

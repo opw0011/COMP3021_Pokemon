@@ -1,6 +1,7 @@
 package pokemon.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Random;
 
 import javafx.animation.AnimationTimer;
@@ -82,8 +83,8 @@ public class PokemonScreenLAB9 extends Application {
 	private AnimationTimer timer;
 	
 	// Layout panels
-	Group mapGroup;
-	VBox rPanel;
+	private static Group mapGroup;
+	private static VBox rPanel;
 	
 	Label labelStatus;
 	
@@ -258,7 +259,9 @@ public class PokemonScreenLAB9 extends Application {
 						ImageView simg = (ImageView) mapGroup.lookup("#S" + row + col);	
 						simg.setVisible(false);			
 						
-						// TODO: trigger function that spawn station after 5 to 10s
+						// trigger function that spawn station after 5 to 10s
+						Thread stationThread = new Thread(new Station(row, col, station.getNumPokeBalls()));
+						stationThread.start();						
 						break;
 						
 					case POKEMON:
@@ -436,6 +439,33 @@ public class PokemonScreenLAB9 extends Application {
 			}
 		}
 	}
+	
+	public boolean pkmCanMove(Pokemon pkm, int row, int col) {
+		return false;
+	}
+	
+	public static void spawnStation(Station station, Cell oldCell) {
+		System.out.println("Spawn Station");
+		System.out.println(station);
+		// update game map and station list
+		myGame.getStations().add(station);
+		myGame.getMap().insertCell(station.getRow(), station.getCol(), MapType.SUPPLY);
+		
+		// update station image
+		ImageView simg = (ImageView) mapGroup.lookup("#S" + oldCell.getRow() + oldCell.getCol());
+		simg.relocate(station.getCol() * STEP_SIZE, station.getRow() * STEP_SIZE);
+		simg.setId("S" + station.getRow() + station.getCol());
+		simg.setVisible(true);	
+	}
+	
+	public static Cell getRandomEmptyCell() {
+		ArrayList<Cell> emptyCells = myGame.getMap().getEmptyCells();
+		Random rand = new Random();
+		int randIndex = rand.nextInt(emptyCells.size());	// rand num [0, emptyCells.size())
+		return emptyCells.get(randIndex);
+	}
+	
+	
 
 	public static void main(String[] args) {
 		launch(args);
