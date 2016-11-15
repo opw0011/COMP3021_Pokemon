@@ -75,7 +75,18 @@ public class Station extends Cell implements Runnable{
 			// Random sleep between 5 to 10 s
 			Random rand = new Random();
 			int delay = rand.nextInt(MAX_RAND_SPAWN_TIME - MIN_RAND_SPAWN_TIME) +  MIN_RAND_SPAWN_TIME;
-			Thread.sleep(delay);
+			System.out.println("Sleep for " + delay);
+			
+			while(true) {
+				if(!PokemonScreenLAB9.isPause()) {
+					delay -= 100;
+				}
+				if(delay <= 0)	
+					break;	
+				
+				Thread.sleep(100);
+			}
+//			Thread.sleep(delay);
 			
 			// find available cell
 			Cell newCell = PokemonScreenLAB9.getRandomEmptyCell();

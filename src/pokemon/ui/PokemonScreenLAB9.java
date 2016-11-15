@@ -72,7 +72,7 @@ public class PokemonScreenLAB9 extends Application {
 	double currentPosy = 0;
 
 	protected boolean stop = false;
-	private boolean pause = false;
+	private static boolean pause = false;
 	
 	// bind variables
 	private SimpleIntegerProperty score = new SimpleIntegerProperty(0); 
@@ -463,6 +463,10 @@ public class PokemonScreenLAB9 extends Application {
 		Random rand = new Random();
 		int randIndex = rand.nextInt(emptyCells.size());	// rand num [0, emptyCells.size())
 		return emptyCells.get(randIndex);
+	}
+	
+	public static boolean isPause() {
+		return pause;
 	}
 	
 	
