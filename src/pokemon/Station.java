@@ -3,7 +3,7 @@ package pokemon;
 import java.util.ArrayList;
 import java.util.Random;
 
-import pokemon.ui.PokemonScreenLAB9;
+import pokemon.ui.PokemonScreen;
 
 /**
  * Class for storing Pokeshop (Station)
@@ -78,7 +78,7 @@ public class Station extends Cell implements Runnable{
 			System.out.println("Sleep for " + delay);
 			
 			while(true) {
-				if(!PokemonScreenLAB9.isPause()) {
+				if(!PokemonScreen.isPause()) {
 					delay -= 100;
 				}
 				if(delay <= 0)	
@@ -89,12 +89,12 @@ public class Station extends Cell implements Runnable{
 //			Thread.sleep(delay);
 			
 			// find available cell
-			Cell newCell = PokemonScreenLAB9.getRandomEmptyCell();
+			Cell newCell = PokemonScreen.getRandomEmptyCell();
 			setRow(newCell.getRow());
 			setCol(newCell.getCol());
 			
 			// invoke UI thread to update station img
-			PokemonScreenLAB9.spawnStation(this, oldCell);			
+			PokemonScreen.spawnStation(this, oldCell);			
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

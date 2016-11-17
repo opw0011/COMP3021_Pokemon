@@ -31,7 +31,7 @@ import pokemon.Pokemon;
 import pokemon.Station;
 //import pokemon.Wall;
 
-public class PokemonScreenLAB9 extends Application {
+public class PokemonScreen extends Application {
 
 	/**
 	 * width of the window
@@ -261,7 +261,8 @@ public class PokemonScreenLAB9 extends Application {
 						
 						// trigger function that spawn station after 5 to 10s
 						Thread stationThread = new Thread(new Station(row, col, station.getNumPokeBalls()));
-						stationThread.start();						
+						stationThread.setDaemon(true);
+						stationThread.start();		
 						break;
 						
 					case POKEMON:
