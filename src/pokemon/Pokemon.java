@@ -1,5 +1,8 @@
 package pokemon;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 import pokemon.ui.PokemonScreen;
 
 /**
@@ -116,20 +119,47 @@ public class Pokemon extends Cell implements Runnable{
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		
 		while(true) {
 //			System.out.println("Pokemon thread is running " + this);
 			Cell oldCell = new Cell(this.getRow(), this.getCol());
-			Cell moveToCell = new Cell(this.getRow(), this.getCol() - 1);
 			
-			if(PokemonScreen.pkmCanMove(moveToCell) && PokemonScreen.isPause() == false && this.visible) {
-				// Move and update the screen
-//				System.out.println("Moving");
-//				this.setCol(moveToCell.getCol());
-//				this.setRow(moveToCell.getRow());
-				PokemonScreen.movePokemon(this, moveToCell, oldCell);
-				
+			ArrayList<Cell> possibleCells = new ArrayList<>();
+	
+			// generate a list of possible cells
+			Cell up = new Cell(this.getRow() - 1, this.getCol());
+			Cell down = new Cell(this.getRow() + 1, this.getCol());
+			Cell left = new Cell(this.getRow(), this.getCol() - 1);
+			Cell right = new Cell(this.getRow(), this.getCol() + 1);
+			
+			possibleCells.add(up);
+			possibleCells.add(down);
+			possibleCells.add(left);
+			possibleCells.add(right);
+			
+			ArrayList<Cell> movableCells = (ArrayList<Cell>) possibleCells.clone();
+			for(Cell cell : possibleCells) {
+				if(! PokemonScreen.pkmCanMove(cell))
+					movableCells.remove(cell);
 			}
+			
+			// if no available cell to move, stay still
+			if(!movableCells.isEmpty()) {
+				// rand number
+				Random rand = new Random();
+				int randIndex = rand.nextInt(movableCells.size());
+				
+				Cell moveToCell = movableCells.get(randIndex);
+				
+//				System.out.println(moveToCell);
+				
+				if(PokemonScreen.pkmCanMove(moveToCell) && PokemonScreen.isPause() == false && this.visible) {
+					// Move and update the screen
+//					System.out.println("Moving");
+					PokemonScreen.movePokemon(this, moveToCell, oldCell);
+				}
+			}
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

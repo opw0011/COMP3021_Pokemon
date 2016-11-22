@@ -293,8 +293,6 @@ public class PokemonScreen extends Application {
 						labelStatus.setText("");
 						break;
 					}
-					
-					
 
 					// update score label
 					score.setValue(myGame.getPlayer().getScore());
@@ -370,8 +368,11 @@ public class PokemonScreen extends Application {
 	    			// update message
 	    			labelStatus.setText("Pokemon Caught!");
 	    			labelStatus.setTextFill(Color.GREEN);
+	    			
+					// update score label
+					score.setValue(myGame.getPlayer().getScore());
 	            }
-	        });
+	        });	     
 		}
 		else {
 	        Platform.runLater(new Runnable() {
@@ -383,6 +384,7 @@ public class PokemonScreen extends Application {
 	        });						
 		}
 		
+        // TODO: kill the pokemon thread
 		// TODO: trigger function to respawn that pkm
 	}
 	
