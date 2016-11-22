@@ -296,6 +296,7 @@ public class PokemonScreen extends Application {
 
 					// update score label
 					score.setValue(myGame.getPlayer().getScore());
+					System.out.println("Active Threads Count: " + java.lang.Thread.activeCount());
 				}
 
 			}
@@ -345,7 +346,7 @@ public class PokemonScreen extends Application {
 		// get the pkm image and set it non-visible
 		ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
 		pkmimg.setVisible(false);
-		pkm.setVisible(false);
+		pkm.setVisible(false);	// kill a thread
 		
 		// update game map (remove that pkm)
 		myGame.getMap().insertCell(row, col, MapType.EMPTY);
@@ -384,7 +385,6 @@ public class PokemonScreen extends Application {
 	        });						
 		}
 		
-        // TODO: kill the pokemon thread
 		// TODO: trigger function to respawn that pkm
 	}
 	

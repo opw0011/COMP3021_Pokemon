@@ -120,7 +120,7 @@ public class Pokemon extends Cell implements Runnable{
 	@Override
 	public void run() {
 		
-		while(true) {
+		while(this.visible) {
 //			System.out.println("Pokemon thread is running " + this);
 			Cell oldCell = new Cell(this.getRow(), this.getCol());
 			
@@ -153,7 +153,7 @@ public class Pokemon extends Cell implements Runnable{
 				
 //				System.out.println(moveToCell);
 				
-				if(PokemonScreen.pkmCanMove(moveToCell) && PokemonScreen.isPause() == false && this.visible) {
+				if(PokemonScreen.pkmCanMove(moveToCell) && PokemonScreen.isPause() == false) {
 					// Move and update the screen
 //					System.out.println("Moving");
 					PokemonScreen.movePokemon(this, moveToCell, oldCell);
