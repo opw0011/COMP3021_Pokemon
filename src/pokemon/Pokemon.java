@@ -1,14 +1,18 @@
 package pokemon;
+
+import pokemon.ui.PokemonScreen;
+
 /**
  * Class for storing pokemon cell
  * @author opw
  *
  */
-public class Pokemon extends Cell{
+public class Pokemon extends Cell implements Runnable{
 	private String name;
 	private String types;
 	private int cp;
 	private int numRequiredBalls;
+	private boolean visible;
 
 	/**
 	 * Constructor
@@ -25,6 +29,7 @@ public class Pokemon extends Cell{
 		this.types = types;
 		this.cp = cp;
 		this.numRequiredBalls = numRequiredBalls;
+		this.visible = true;
 	}
 
 	//--------------------
@@ -52,6 +57,14 @@ public class Pokemon extends Cell{
 
 	public void setNumRequiredBalls(int numRequiredBalls) {
 		this.numRequiredBalls = numRequiredBalls;
+	}
+
+	public boolean isVisible() {
+		return visible;
+	}
+
+	public void setVisible(boolean visible) {
+		this.visible = visible;
 	}
 
 	//--------------------------
@@ -99,4 +112,31 @@ public class Pokemon extends Cell{
 			return false;
 		return true;
 	}
+
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		while(true) {
+//			System.out.println("Pokemon thread is running " + this);
+			Cell oldCell = new Cell(this.getRow(), this.getCol());
+			Cell moveToCell = new Cell(this.getRow(), this.getCol() - 1);
+			
+			if(PokemonScreen.pkmCanMove(moveToCell) && PokemonScreen.isPause() == false && this.visible) {
+				// Move and update the screen
+//				System.out.println("Moving");
+//				this.setCol(moveToCell.getCol());
+//				this.setRow(moveToCell.getRow());
+				PokemonScreen.movePokemon(this, moveToCell, oldCell);
+				
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 }

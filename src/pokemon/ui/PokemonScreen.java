@@ -6,6 +6,7 @@ import java.util.Random;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
@@ -75,9 +76,9 @@ public class PokemonScreen extends Application {
 	private static boolean pause = false;
 	
 	// bind variables
-	private SimpleIntegerProperty score = new SimpleIntegerProperty(0); 
-	private SimpleIntegerProperty numCaught = new SimpleIntegerProperty(0); 
-	private SimpleIntegerProperty numBalls = new SimpleIntegerProperty(0); 
+	private static SimpleIntegerProperty score = new SimpleIntegerProperty(0); 
+	private static SimpleIntegerProperty numCaught = new SimpleIntegerProperty(0); 
+	private static SimpleIntegerProperty numBalls = new SimpleIntegerProperty(0); 
 //	private SimpleStringProperty statusMsg = new SimpleStringProperty();
 	
 	private AnimationTimer timer;
@@ -86,7 +87,7 @@ public class PokemonScreen extends Application {
 	private static Group mapGroup;
 	private static VBox rPanel;
 	
-	Label labelStatus;
+	private static Label labelStatus;
 	
 
 	@Override
@@ -241,6 +242,14 @@ public class PokemonScreen extends Application {
 				if(myGame.getMap().canWalk(row, col)) {
 					Cell current = new Cell(row, col);
 					
+					// update player position
+					player.setRow(row);
+					player.setCol(col);
+					player.addVistedCell(current);
+					
+					// move image of avatar
+					moveAvatarBy(dx, dy);
+					
 					switch(myGame.getMap().getCellType(current)) {
 					case SUPPLY:
 						Station station = myGame.getStation(current);
@@ -267,43 +276,7 @@ public class PokemonScreen extends Application {
 						
 					case POKEMON:
 						Pokemon pkm = myGame.getPokemon(current);
-						
-						int pkBallsLeft = myGame.getPlayer().getNumPokeBalls() - pkm.getNumRequiredBalls();
-						
-						// get the pkm image and set it non-visible
-						ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
-						pkmimg.setVisible(false);
-						
-						// update game map (remove that pkm)
-						myGame.getMap().insertCell(row, col, MapType.EMPTY);
-						myGame.getPokemons().remove(pkm);
-						
-						// if have enough balls to catch pkm
-						if(pkBallsLeft >= 0) {
-							// caught pkm
-							myGame.getPlayer().addCaughtPokemon(pkm);
-														
-							// update # balls
-							myGame.getPlayer().setNumPokeBalls(pkBallsLeft);
-							numBalls.set(pkBallsLeft);
-							
-							// update # pkm caught
-							numCaught.set(myGame.getPlayer().getPkmCaught().size());
-							
-							// update message
-							labelStatus.setText("Pokemon Caught!");
-							labelStatus.setTextFill(Color.GREEN);
-							
-							// TODO: trigger function to respawn that pkm
-						}
-						else {
-							// not enough balls to catch that pkm
-							labelStatus.setText("NOT enough pokemon ball!");
-							labelStatus.setTextFill(Color.RED);
-									
-							// TODO: respawn the pkm							
-						}
-						
+						playerEncounterPokemon(pkm);
 						break;
 						
 					case DEST:
@@ -322,13 +295,7 @@ public class PokemonScreen extends Application {
 					}
 					
 					
-					// move image of avatar
-					moveAvatarBy(dx, dy);
-					
-					// update player position
-					player.setRow(row);
-					player.setCol(col);
-					player.addVistedCell(current);
+
 					// update score label
 					score.setValue(myGame.getPlayer().getScore());
 				}
@@ -337,6 +304,13 @@ public class PokemonScreen extends Application {
 		};
 		// start the timer
 		timer.start();
+		
+		// start moving pokemons
+		for(Pokemon pkm : myGame.getPokemons()) {
+			Thread pkmThread = new Thread(pkm);
+			pkmThread.setDaemon(true);
+			pkmThread.start();
+		}
 	}
 
 	private void moveAvatarBy(int dx, int dy) {
@@ -362,6 +336,54 @@ public class PokemonScreen extends Application {
 			// I moved the avatar lets set stop at true and wait user release the key :)
 			stop = true;
 		}
+	}
+	
+	private static void playerEncounterPokemon(Pokemon pkm) {
+		int pkBallsLeft = myGame.getPlayer().getNumPokeBalls() - pkm.getNumRequiredBalls();
+		
+		int row = myGame.getPlayer().getRow();
+		int col = myGame.getPlayer().getCol();
+		
+		// get the pkm image and set it non-visible
+		ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
+		pkmimg.setVisible(false);
+		pkm.setVisible(false);
+		
+		// update game map (remove that pkm)
+		myGame.getMap().insertCell(row, col, MapType.EMPTY);
+//		myGame.getPokemons().remove(pkm);
+		
+		// if have enough balls to catch pkm
+		if(pkBallsLeft >= 0) {
+			// catch pkm
+			myGame.getPlayer().addCaughtPokemon(pkm);								
+			
+	        Platform.runLater(new Runnable() {
+	            @Override public void run() {
+	    			// update # balls
+	    			myGame.getPlayer().setNumPokeBalls(pkBallsLeft);
+	    			numBalls.set(pkBallsLeft);
+	    			
+	    			// update # pkm caught
+	    			numCaught.set(myGame.getPlayer().getPkmCaught().size());
+	    			
+	    			// update message
+	    			labelStatus.setText("Pokemon Caught!");
+	    			labelStatus.setTextFill(Color.GREEN);
+	            }
+	        });
+		}
+		else {
+	        Platform.runLater(new Runnable() {
+	            @Override public void run() {
+	    			// not enough balls to catch that pkm
+	    			labelStatus.setText("NOT enough pokemon ball!");
+	    			labelStatus.setTextFill(Color.RED);
+	            }
+	        });						
+		}
+		
+		// TODO: trigger function to respawn that pkm
 	}
 	
 	/**
@@ -441,8 +463,34 @@ public class PokemonScreen extends Application {
 		}
 	}
 	
-	public boolean pkmCanMove(Pokemon pkm, int row, int col) {
-		return false;
+	// make sure the walk is valid and cannot walk on station/other pkm
+	public synchronized static boolean pkmCanMove(Cell cell) {
+		if(! myGame.getMap().canWalk(cell.getRow(), cell.getCol()))	return false;
+		
+		MapType type = myGame.getMap().getCellType(cell.getRow(), cell.getCol());
+		return ((type != MapType.SUPPLY  && type != MapType.POKEMON));
+	}
+	
+	public synchronized static void movePokemon(Pokemon pkm, Cell newCell, Cell oldCell) {
+		// Move pokemon
+		pkm.setCol(newCell.getCol());
+		pkm.setRow(newCell.getRow());
+		
+		// update game map
+		myGame.getMap().insertCell(pkm.getRow(), pkm.getCol(), MapType.POKEMON);
+		myGame.getMap().insertCell(oldCell.getRow(), oldCell.getCol(), MapType.EMPTY);
+		
+		// update pkm image
+		ImageView pimg = (ImageView) mapGroup.lookup("#P" + oldCell.getRow() + oldCell.getCol());
+		pimg.relocate(pkm.getCol() * STEP_SIZE, pkm.getRow() * STEP_SIZE);
+		pimg.setId("P" + pkm.getRow() + pkm.getCol());
+		pimg.setVisible(true);
+		
+		// check if encounter with the player
+		Player myPlayer = myGame.getPlayer();
+		if(myPlayer.getRow() == newCell.getRow() && myPlayer.getCol() == newCell.getCol()) {
+			playerEncounterPokemon(pkm);
+		}
 	}
 	
 	public static void spawnStation(Station station, Cell oldCell) {
@@ -459,21 +507,18 @@ public class PokemonScreen extends Application {
 		simg.setVisible(true);	
 	}
 	
-	public static Cell getRandomEmptyCell() {
+	public synchronized static Cell getRandomEmptyCell() {
 		ArrayList<Cell> emptyCells = myGame.getMap().getEmptyCells();
 		Random rand = new Random();
 		int randIndex = rand.nextInt(emptyCells.size());	// rand num [0, emptyCells.size())
 		return emptyCells.get(randIndex);
 	}
 	
-	public static boolean isPause() {
+	public synchronized static boolean isPause() {
 		return pause;
 	}
 	
-	
-
 	public static void main(String[] args) {
 		launch(args);
 	}
-
 }
