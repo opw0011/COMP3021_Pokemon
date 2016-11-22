@@ -509,8 +509,14 @@ public class PokemonScreen extends Application {
 		simg.setVisible(true);	
 	}
 	
+	// Loop through the map and get all available(EMPTY) cells
 	public synchronized static Cell getRandomEmptyCell() {
 		ArrayList<Cell> emptyCells = myGame.getMap().getEmptyCells();
+		
+		// make sure station will not spawn on player
+		Player p = myGame.getPlayer();
+		emptyCells.remove(new Cell(p.getRow(), p.getCol()));
+		
 		Random rand = new Random();
 		int randIndex = rand.nextInt(emptyCells.size());	// rand num [0, emptyCells.size())
 		return emptyCells.get(randIndex);
