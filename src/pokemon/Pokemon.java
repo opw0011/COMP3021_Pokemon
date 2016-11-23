@@ -161,7 +161,9 @@ public class Pokemon extends Cell implements Runnable{
 			}
 
 			try {
-				Thread.sleep(1000);
+				Random rand = new Random();
+				int delay = rand.nextInt(2000) + 1000;
+				Thread.sleep(delay);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

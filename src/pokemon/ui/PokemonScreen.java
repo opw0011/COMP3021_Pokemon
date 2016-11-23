@@ -350,12 +350,13 @@ public class PokemonScreen extends Application {
 		
 		// update game map (remove that pkm)
 		myGame.getMap().insertCell(row, col, MapType.EMPTY);
-//		myGame.getPokemons().remove(pkm);
+
 		
 		// if have enough balls to catch pkm
 		if(pkBallsLeft >= 0) {
 			// catch pkm
-			myGame.getPlayer().addCaughtPokemon(pkm);								
+			myGame.getPlayer().addCaughtPokemon(pkm);	
+			myGame.getPokemons().remove(pkm);
 			
 	        Platform.runLater(new Runnable() {
 	            @Override public void run() {
@@ -382,10 +383,10 @@ public class PokemonScreen extends Application {
 	    			labelStatus.setText("NOT enough pokemon ball!");
 	    			labelStatus.setTextFill(Color.RED);
 	            }
-	        });						
+	        });		
+	        
+	        // TODO: trigger function to respawn that pkm       
 		}
-		
-		// TODO: trigger function to respawn that pkm
 	}
 	
 	/**
@@ -470,7 +471,7 @@ public class PokemonScreen extends Application {
 		if(! myGame.getMap().canWalk(cell.getRow(), cell.getCol()))	return false;
 		
 		MapType type = myGame.getMap().getCellType(cell.getRow(), cell.getCol());
-		return ((type != MapType.SUPPLY  && type != MapType.POKEMON));
+		return ((type != MapType.SUPPLY  && type != MapType.POKEMON && type != MapType.DEST));
 	}
 	
 	public synchronized static void movePokemon(Pokemon pkm, Cell newCell, Cell oldCell) {
