@@ -16,6 +16,7 @@ public class Pokemon extends Cell implements Runnable{
 	private int cp;
 	private int numRequiredBalls;
 	private boolean visible;
+	private boolean respawn = false;
 
 	/**
 	 * Constructor
@@ -70,13 +71,17 @@ public class Pokemon extends Cell implements Runnable{
 		this.visible = visible;
 	}
 
+	public void setRespawn(boolean respawn) {
+		this.respawn = respawn;
+	}
+
 	//--------------------------
 	// Auto Generated Functions
 	//--------------------------
 	@Override
 	public String toString() {
 		return "Pokemon [name=" + name + ", types=" + types + ", cp=" + cp + ", numRequiredBalls="
-				+ numRequiredBalls + "]";
+				+ numRequiredBalls + ", " + super.toString() + "]";
 	}
 
 	@Override
@@ -120,9 +125,38 @@ public class Pokemon extends Cell implements Runnable{
 	@Override
 	public void run() {
 		
-		while(this.visible) {
-//			System.out.println("Pokemon thread is running " + this);
+		while(this.visible) {		
 			Cell oldCell = new Cell(this.getRow(), this.getCol());
+			
+			// Respawn the pokemon at random place
+			if(respawn) {
+				try {
+					Random rand = new Random();
+					int delay = rand.nextInt(2000) + 3000;	// delay 3- 5s
+					System.out.println("Waiting respawn for " + delay + " ->" + this);
+//					Thread.sleep(delay);
+					while(true) {
+						if(!PokemonScreen.isPause()) {
+							delay -= 100;
+						}
+						if(delay <= 0)	
+							break;	
+						
+						Thread.sleep(100);
+					}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				// find available cell
+				Cell newCell = PokemonScreen.getRandomEmptyCell();
+				
+				PokemonScreen.movePokemon(this, newCell, oldCell);
+				respawn = false;
+				continue;
+			}
+			
 			
 			ArrayList<Cell> possibleCells = new ArrayList<>();
 	
@@ -158,17 +192,21 @@ public class Pokemon extends Cell implements Runnable{
 //					System.out.println("Moving");
 					PokemonScreen.movePokemon(this, moveToCell, oldCell);
 				}
-			}
-
+			}			
+			
 			try {
 				Random rand = new Random();
-				int delay = rand.nextInt(2000) + 1000;
+				int delay = rand.nextInt(1000) + 1000;
 				Thread.sleep(delay);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		
+
+
+		
 	}
 
 }

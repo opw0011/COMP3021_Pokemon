@@ -337,58 +337,6 @@ public class PokemonScreen extends Application {
 		}
 	}
 	
-	private static void playerEncounterPokemon(Pokemon pkm) {
-		int pkBallsLeft = myGame.getPlayer().getNumPokeBalls() - pkm.getNumRequiredBalls();
-		
-		int row = myGame.getPlayer().getRow();
-		int col = myGame.getPlayer().getCol();
-		
-		// get the pkm image and set it non-visible
-		ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
-		pkmimg.setVisible(false);
-		pkm.setVisible(false);	// kill a thread
-		
-		// update game map (remove that pkm)
-		myGame.getMap().insertCell(row, col, MapType.EMPTY);
-
-		
-		// if have enough balls to catch pkm
-		if(pkBallsLeft >= 0) {
-			// catch pkm
-			myGame.getPlayer().addCaughtPokemon(pkm);	
-			myGame.getPokemons().remove(pkm);
-			
-	        Platform.runLater(new Runnable() {
-	            @Override public void run() {
-	    			// update # balls
-	    			myGame.getPlayer().setNumPokeBalls(pkBallsLeft);
-	    			numBalls.set(pkBallsLeft);
-	    			
-	    			// update # pkm caught
-	    			numCaught.set(myGame.getPlayer().getPkmCaught().size());
-	    			
-	    			// update message
-	    			labelStatus.setText("Pokemon Caught!");
-	    			labelStatus.setTextFill(Color.GREEN);
-	    			
-					// update score label
-					score.setValue(myGame.getPlayer().getScore());
-	            }
-	        });	     
-		}
-		else {
-	        Platform.runLater(new Runnable() {
-	            @Override public void run() {
-	    			// not enough balls to catch that pkm
-	    			labelStatus.setText("NOT enough pokemon ball!");
-	    			labelStatus.setTextFill(Color.RED);
-	            }
-	        });		
-	        
-	        // TODO: trigger function to respawn that pkm       
-		}
-	}
-	
 	/**
 	 * Game Map UI Setup
 	 * @param args
@@ -464,6 +412,61 @@ public class PokemonScreen extends Application {
 				group.getChildren().add(img);
 			}
 		}
+	}
+	
+	private synchronized static void playerEncounterPokemon(Pokemon pkm) {
+		int pkBallsLeft = myGame.getPlayer().getNumPokeBalls() - pkm.getNumRequiredBalls();
+		
+		int row = myGame.getPlayer().getRow();
+		int col = myGame.getPlayer().getCol();
+		
+		// get the pkm image and set it non-visible
+		ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
+		pkmimg.setVisible(false);
+
+		
+		// update game map (remove that pkm)
+		myGame.getMap().insertCell(row, col, MapType.EMPTY);
+
+		
+		// if have enough balls to catch pkm
+		if(pkBallsLeft >= 0) {
+			// catch pkm
+			myGame.getPlayer().addCaughtPokemon(pkm);	
+			myGame.getPokemons().remove(pkm);
+			pkm.setVisible(false);	// kill a thread
+			
+	        Platform.runLater(new Runnable() {
+	            @Override public void run() {
+	    			// update # balls
+	    			myGame.getPlayer().setNumPokeBalls(pkBallsLeft);
+	    			numBalls.set(pkBallsLeft);
+	    			
+	    			// update # pkm caught
+	    			numCaught.set(myGame.getPlayer().getPkmCaught().size());
+	    			
+	    			// update message
+	    			labelStatus.setText("Pokemon Caught!");
+	    			labelStatus.setTextFill(Color.GREEN);
+	    			
+					// update score label
+					score.setValue(myGame.getPlayer().getScore());
+	            }
+	        });	     
+		}
+		else {
+	        Platform.runLater(new Runnable() {
+	            @Override public void run() {
+	    			// not enough balls to catch that pkm
+	    			labelStatus.setText("NOT enough pokemon ball!");
+	    			labelStatus.setTextFill(Color.RED);
+	            }
+	        });		
+	        
+	        // trigger function to respawn that pkm 
+	        pkm.setRespawn(true);
+		}
+		
 	}
 	
 	// make sure the walk is valid and cannot walk on station/other pkm
