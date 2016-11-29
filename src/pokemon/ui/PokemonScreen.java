@@ -11,11 +11,13 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -98,23 +100,22 @@ public class PokemonScreen extends Application {
 
 	@Override
 	public void start(Stage stage) throws Exception {
-		
-		HBox hbox = new HBox(20);
-		hbox.setPadding(new Insets(10));
+		BorderPane mainPane = new BorderPane();
+		mainPane.setPadding(new Insets(10));
 		
 		// Setup Map and add to myGroup
 		mapGroup = new Group();
 		buildMap(mapGroup);
 		
-		hbox.getChildren().add(mapGroup);
-
+		mainPane.setLeft(mapGroup);
 		
 		// right-sided menu
 		rPanel = new VBox(10);
+		rPanel.setPrefWidth(170);
 		
-		Label lableScore = new Label();
-		lableScore.textProperty().bind(score.asString());		
-		rPanel.getChildren().add(new HBox(new Label("Current score: "), lableScore));
+		Label labelScore = new Label();
+		labelScore.textProperty().bind(score.asString());		
+		rPanel.getChildren().add(new HBox(new Label("Current score: "), labelScore));
 		
 		Label labelCaught = new Label();
 		labelCaught.textProperty().bind(numCaught.asString());	
@@ -151,13 +152,12 @@ public class PokemonScreen extends Application {
 		HBox btnPanel = new HBox(10);
 		btnPanel.setPadding(new Insets(50, 0,0,0));
 		btnPanel.getChildren().addAll(btnResume, btnPause);
-//		btnPanel.getChildren().addAll(btnResume, btnPause, b);
 		rPanel.getChildren().add(btnPanel);
 		
-		hbox.getChildren().add(rPanel);		
+		mainPane.setRight(rPanel);
 
 		// create scene
-		Scene scene = new Scene(hbox);
+		Scene scene = new Scene(mainPane);
 
 		// add listener on key pressing
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -320,9 +320,7 @@ public class PokemonScreen extends Application {
 	}
 	
 	private synchronized static void showCatchAnimation(String imgPath) {
-		//TODO: fix bug => key error when when not caugt
-		// TOOD: another bug: thread still runing after window is closed
-		if(imgPath=="") return;
+		if(imgPath == "") return;
 		
 		pause = true;
 		timer.stop();
