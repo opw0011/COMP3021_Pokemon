@@ -130,7 +130,7 @@ public class Game {
 				stations.add(new Station(row, col, pvdBalls));
 			}
 			else {
-				throw new Exception("Cannot parse map data");
+//				throw new Exception("Cannot parse map data");
 			}
 		}
 		

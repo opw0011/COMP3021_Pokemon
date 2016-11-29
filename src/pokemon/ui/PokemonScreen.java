@@ -446,7 +446,8 @@ public class PokemonScreen extends Application {
 					int id = PokemonList.getIdOfFromName(pkm.getName());;
 					String path = new File("icons/" + id + ".png").toURI().toString();
 					img = new ImageView(path);
-					img.setId("P" + i + j); // id: "P[row][col]"
+					img.setId("P" + pkm.gameHashCode());
+//					System.out.println(img.getId());
 					break;
 					
 				case SUPPLY:
@@ -477,7 +478,7 @@ public class PokemonScreen extends Application {
 		int col = myGame.getPlayer().getCol();
 		
 		// get the pkm image and set it non-visible
-		ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
+		ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + pkm.gameHashCode());	
 		pkmimg.setVisible(false);
 				
 		// update game map (remove that pkm)
@@ -513,7 +514,7 @@ public class PokemonScreen extends Application {
 		}
 		else {        
 	        // trigger function to respawn that pkm 
-	        pkm.setRespawn(true);
+	        pkm.setRespawn(true);	      
 	        
 	        Platform.runLater(new Runnable() {
 	            @Override public void run() {
@@ -545,9 +546,9 @@ public class PokemonScreen extends Application {
 		myGame.getMap().insertCell(oldCell.getRow(), oldCell.getCol(), MapType.EMPTY);
 		
 		// update pkm image
-		ImageView pimg = (ImageView) mapGroup.lookup("#P" + oldCell.getRow() + oldCell.getCol());
+//		System.out.println(pkm.hashCode());
+		ImageView pimg = (ImageView) mapGroup.lookup("#P" + pkm.gameHashCode());
 		pimg.relocate(pkm.getCol() * STEP_SIZE, pkm.getRow() * STEP_SIZE);
-		pimg.setId("P" + pkm.getRow() + pkm.getCol());
 		pimg.setVisible(true);
 		
 		// check if encounter with the player
@@ -578,6 +579,7 @@ public class PokemonScreen extends Application {
 		// make sure station will not spawn on player
 		Player p = myGame.getPlayer();
 		emptyCells.remove(new Cell(p.getRow(), p.getCol()));
+//		System.out.println(emptyCells);
 		
 		Random rand = new Random();
 		int randIndex = rand.nextInt(emptyCells.size());	// rand num [0, emptyCells.size())

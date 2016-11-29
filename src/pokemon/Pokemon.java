@@ -120,7 +120,17 @@ public class Pokemon extends Cell implements Runnable{
 			return false;
 		return true;
 	}
-
+	
+	public int gameHashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + cp;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + numRequiredBalls;
+		result = prime * result + ((types == null) ? 0 : types.hashCode());
+		return result;
+	}
+	
 
 	@Override
 	public void run() {
@@ -135,7 +145,7 @@ public class Pokemon extends Cell implements Runnable{
 					int delay = rand.nextInt(2000) + 3000;	// delay 3- 5s
 					System.out.println("Waiting respawn for " + delay + " ->" + this);
 //					Thread.sleep(delay);
-					while(true) {
+					while(respawn) {
 						if(!PokemonScreen.isPause()) {
 							delay -= 100;
 						}
@@ -154,6 +164,16 @@ public class Pokemon extends Cell implements Runnable{
 				
 				PokemonScreen.movePokemon(this, newCell, oldCell);
 				respawn = false;
+				
+				// after newly spawn, wait to move
+				try {
+					Random rand = new Random();
+					int delay = rand.nextInt(1000) + 1000;
+					Thread.sleep(delay);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				continue;
 			}
 			

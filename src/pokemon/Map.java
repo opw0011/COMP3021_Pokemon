@@ -130,12 +130,12 @@ public class Map implements Cloneable{
 		return true;		
 	}
 	
-	// get available cells
+	// get available cells (EMPTY + START)
 	public ArrayList<Cell> getEmptyCells() {
 		ArrayList<Cell> list = new ArrayList<Cell>();
 		for(int i = 0; i < M; i++) {
 			for(int j = 0; j < N; j++) {
-				if(cells[i][j] == MapType.EMPTY) {
+				if(cells[i][j] == MapType.EMPTY || cells[i][j] == MapType.START) {
 					list.add(new Cell(i, j));					
 				}
 			}
