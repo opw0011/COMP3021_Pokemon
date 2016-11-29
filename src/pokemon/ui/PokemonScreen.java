@@ -17,11 +17,14 @@ import javafx.scene.control.Label;
 import javafx.scene.image.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import pokemon.Cell;
 import pokemon.Game;
 //import pokemon.Empty;
@@ -61,6 +64,10 @@ public class PokemonScreen extends Application {
 	private static final String exit = new File("icons/exit.png").toURI().toString();
 	private static final String ball = new File("icons/ball_ani.gif").toURI().toString();
 	
+	// gif animations
+	private static final String escape = new File("icons/escape.gif").toURI().toString();
+	private static final String caught = new File("icons/caught.gif").toURI().toString();
+	
 	// avatar images
 	private ImageView avatar;
 	private Image avatarImage;
@@ -79,9 +86,8 @@ public class PokemonScreen extends Application {
 	private static SimpleIntegerProperty score = new SimpleIntegerProperty(0); 
 	private static SimpleIntegerProperty numCaught = new SimpleIntegerProperty(0); 
 	private static SimpleIntegerProperty numBalls = new SimpleIntegerProperty(0); 
-//	private SimpleStringProperty statusMsg = new SimpleStringProperty();
 	
-	private AnimationTimer timer;
+	private static AnimationTimer timer;
 	
 	// Layout panels
 	private static Group mapGroup;
@@ -119,7 +125,6 @@ public class PokemonScreen extends Application {
 		rPanel.getChildren().add(new HBox(new Label("# of Pokeballs owned: "),labelBalls));
 		
 		labelStatus = new Label();
-//		labelStatus.textProperty().bind(statusMsg);
 		rPanel.getChildren().add(labelStatus);
 				
 		// buttons
@@ -146,6 +151,7 @@ public class PokemonScreen extends Application {
 		HBox btnPanel = new HBox(10);
 		btnPanel.setPadding(new Insets(50, 0,0,0));
 		btnPanel.getChildren().addAll(btnResume, btnPause);
+//		btnPanel.getChildren().addAll(btnResume, btnPause, b);
 		rPanel.getChildren().add(btnPanel);
 		
 		hbox.getChildren().add(rPanel);		
@@ -180,27 +186,28 @@ public class PokemonScreen extends Application {
 				}
 			}
 		});
-
 		// add listener key released
 		scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
-				switch (event.getCode()) {
-				case UP:
-					goUp = false;
-					break;
-				case DOWN:
-					goDown = false;
-					break;
-				case LEFT:
-					goLeft = false;
-					break;
-				case RIGHT:
-					goRight = false;
-					break;
-				default:
-					break;
-				}
+				if(pause)	return;	// ignore key press when the pause btn is clicked
+//				switch (event.getCode()) {
+//				case UP:
+//					goUp = false;
+//					break;
+//				case DOWN:
+//					goDown = false;
+//					break;
+//				case LEFT:
+//					goLeft = false;
+//					break;
+//				case RIGHT:
+//					goRight = false;
+//					break;
+//				default:
+//					break;
+//				}
+				goUp = goDown = goLeft = goRight = false;
 				stop = false;
 			}
 		});
@@ -283,8 +290,8 @@ public class PokemonScreen extends Application {
 						// pause the game and set btn disable
 						pause = true;
 						timer.stop();
-						((Button) rPanel.lookup("#btnResume")).setVisible(false);
-						((Button) rPanel.lookup("#btnPause")).setVisible(false);	
+						((Button) rPanel.lookup("#btnResume")).setDisable(true);
+						((Button) rPanel.lookup("#btnPause")).setDisable(true);	
 						labelStatus.setText("End Game");
 						labelStatus.setTextFill(Color.GREEN);
 						break;
@@ -310,6 +317,57 @@ public class PokemonScreen extends Application {
 			pkmThread.setDaemon(true);
 			pkmThread.start();
 		}
+	}
+	
+	private synchronized static void showCatchAnimation(String imgPath) {
+		//TODO: fix bug => key error when when not caugt
+		// TOOD: another bug: thread still runing after window is closed
+		if(imgPath=="") return;
+		
+		pause = true;
+		timer.stop();
+		
+		// show windows
+        Stage newStage = new Stage();
+        newStage.setTitle("My New Stage Title");
+        Image img = new Image(imgPath);
+        ImageView imgView = new ImageView();
+        imgView.setImage(img);
+        imgView.setFitWidth(250);
+        imgView.setPreserveRatio(true);
+        StackPane pane = new StackPane();
+        pane.getChildren().add(imgView); 
+        newStage.setScene(new Scene(pane));
+        newStage.setAlwaysOnTop(true);
+        newStage.initStyle(StageStyle.UNDECORATED);
+        newStage.show();
+		((Button) rPanel.lookup("#btnResume")).setDisable(true);
+		((Button) rPanel.lookup("#btnPause")).setDisable(true);	
+        
+        int animationTime = (imgPath == caught) ? 7200 : 5360;
+      
+        // close the window after certain seconds
+        Thread callback = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(animationTime);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						newStage.close();
+						timer.start();
+						pause = false;
+						((Button) rPanel.lookup("#btnResume")).setDisable(false);
+						((Button) rPanel.lookup("#btnPause")).setDisable(false);	
+					}
+				});
+			}
+        });
+        callback.start();
 	}
 
 	private void moveAvatarBy(int dx, int dy) {
@@ -423,8 +481,7 @@ public class PokemonScreen extends Application {
 		// get the pkm image and set it non-visible
 		ImageView pkmimg = (ImageView) mapGroup.lookup("#P" + row + col);	
 		pkmimg.setVisible(false);
-
-		
+				
 		// update game map (remove that pkm)
 		myGame.getMap().insertCell(row, col, MapType.EMPTY);
 
@@ -451,20 +508,23 @@ public class PokemonScreen extends Application {
 	    			
 					// update score label
 					score.setValue(myGame.getPlayer().getScore());
+					
+					showCatchAnimation(caught);
 	            }
-	        });	     
+	        });	 
 		}
-		else {
+		else {        
+	        // trigger function to respawn that pkm 
+	        pkm.setRespawn(true);
+	        
 	        Platform.runLater(new Runnable() {
 	            @Override public void run() {
 	    			// not enough balls to catch that pkm
 	    			labelStatus.setText("NOT enough pokemon ball!");
 	    			labelStatus.setTextFill(Color.RED);
+	    			showCatchAnimation(escape);
 	            }
 	        });		
-	        
-	        // trigger function to respawn that pkm 
-	        pkm.setRespawn(true);
 		}
 		
 	}
